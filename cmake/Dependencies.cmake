@@ -59,7 +59,7 @@ endif ()
 
 find_package(Java COMPONENTS Runtime)
 
-
+find_package(CppUnit)
 
 #set(WITH_V8                  "${V8_SEARCH_PATH}")
 #find_package(V8)

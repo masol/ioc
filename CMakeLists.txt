@@ -55,8 +55,13 @@ INCLUDE(Configuration)
 # Install CMake modules
 #add_subdirectory(CMake)
 
-SET(LuxRays_INCLUDE_DIR "${LuxRays_SOURCE_DIR}/include")
-include_directories("${LuxRays_INCLUDE_DIR}")
+
+SET(IOC_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+SET(IOC_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+
+SET(IOC_INCLUDE_DIR "${IOC_SOURCE_DIR}/include")
+include_directories("${IOC_INCLUDE_DIR}")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/include")
 
 # When using single configuration generators like make
 # cmake does need to know which of the possible configurations
@@ -83,9 +88,15 @@ if (NOT Java_Runtime_FOUND)
 	MESSAGE(FATAL_ERROR "--> Could not locate required Java Environment - Please check ${Java_JAVA_EXECUTABLE}")
 endif()
 
-message(STATUS "CMAKE_CURRENT_SOURCE_DIR: " ${CMAKE_CURRENT_SOURCE_DIR})
-
+add_subdirectory(src/utils)
 add_subdirectory(src/ioc)
+
+if (NOT CPPUNIT_FOUND)
+	MESSAGE(STATUS "CppUnit not found, ignore Test.")
+else()
+	MESSAGE(STATUS "CppUnit found,building Test.")
+	add_subdirectory(test/cppunit)
+endif()
 
 ###########################################################################
 #
