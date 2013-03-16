@@ -1,0 +1,15 @@
+our enviornment in windows :  link static and use shared runtime.
+
+prepare v8:
+
+1. checkout from http://v8.googlecode.com/svn/trunk to c:\depends\v8
+2. cd c:\depends\v8
+3. run command : 
+   svn co -q http://gyp.googlecode.com/svn/trunk build/gyp
+   svn co -q http://src.chromium.org/svn/trunk/deps/third_party/cygwin@66844 third_party/cygwin
+   svn co -q http://src.chromium.org/svn/trunk/tools/third_party/python_26@89111 third_party/python_26
+4. then run command to generate sln files:
+   third_party\python_26\python.exe build\gyp_v8 -Dcomponent=shared_library -Dtarget_arch=x64 -G msvs_version=2008
+   see here to 
+
+   
