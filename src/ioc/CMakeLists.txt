@@ -22,15 +22,6 @@
 # IOC binary
 #
 #############################################################################
-set(IOC_VERSION_MAJOR 0)
-set(IOC_VERSION_MINOR 1)
-
-# Configure a header file to pass some of the CMake settings
-# to the source code
-configure_file(
-  "${IOC_SOURCE_DIR}/include/config.h.in"
-  "${IOC_BUILD_DIR}/include/config.h"
-  )
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
@@ -66,11 +57,13 @@ if(DOXYGEN_FOUND)
 	add_custom_command(
 		OUTPUT ${DOXYGEN_IOC_OUTPUT}
 		# Creating custom doxygen-ioc.conf
-		COMMAND mkdir -p ${DOXYGEN_IOC_OUTPUT_DIR}
-		COMMAND copy /Y ${DOXYGEN_IOC_TEMPLATE} ${DOXYGEN_IOC_INPUT}
-		COMMAND echo INPUT = ${IOC_SOURCE_DIR}/include  ${IOC_SOURCE_DIR}/src >> ${DOXYGEN_IOC_INPUT}
-		COMMAND echo OUTPUT_DIRECTORY = ${DOXYGEN_IOC_OUTPUT_DIR} >> ${DOXYGEN_IOC_INPUT}
-		COMMAND echo ${DOXYGEN_DOT_CONF} >> ${DOXYGEN_IOC_INPUT}
+		COMMAND if exist "${DOXYGEN_IOC_OUTPUT_DIR}" echo "dir exist" else mkdir -p "${DOXYGEN_IOC_OUTPUT_DIR}"
+		COMMAND copy /Y "${DOXYGEN_IOC_TEMPLATE}" "${DOXYGEN_IOC_INPUT}"
+		COMMAND echo INPUT = "${IOC_SOURCE_DIR}/include"  "${IOC_SOURCE_DIR}/src" >> ${DOXYGEN_IOC_INPUT}
+		COMMAND echo OUTPUT_DIRECTORY = "${DOXYGEN_IOC_OUTPUT_DIR}" >> ${DOXYGEN_IOC_INPUT}
+		IF (DOXYGEN_DOT_CONF)
+			COMMAND echo ${DOXYGEN_DOT_CONF} >> ${DOXYGEN_IOC_INPUT}
+		ENDIF(DOXYGEN_DOT_CONF)
 		# Launch doxygen
 		COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_IOC_INPUT}
 		DEPENDS ${DOXYGEN_IOC_TEMPLATE}
@@ -86,4 +79,4 @@ set(IOC_SRCS
 
 add_executable(ioc ${IOC_SRCS})
 
-TARGET_LINK_LIBRARIES(ioc ${V8_LIBRARY})
+TARGET_LINK_LIBRARIES(ioc utils)

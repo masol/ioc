@@ -17,6 +17,7 @@
 //  IOC website: http://www.masols.com                                    //
 ////////////////////////////////////////////////////////////////////////////
 
+#include "config.h"
 #include "utils/macro.h"
 #include "utils/zone.h"
 #include <boost/thread/tss.hpp>

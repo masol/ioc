@@ -17,12 +17,17 @@
 //  IOC website: http://www.masols.com                                    //
 ////////////////////////////////////////////////////////////////////////////
 
-
+#include "config.h"
+#include "utils/option.h"
 #include <stdio.h>
 
 
-int main(int argc,char * argv[])
+int main(int argc,const char * argv[])
 {
-	printf("hello,world");
+	//initionlize config.
+	if(!ioc::utils::Option::init(argc,argv))
+		return 0;
+
+	printf("hello,finish");
 	return 0;
 }

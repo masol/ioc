@@ -17,20 +17,49 @@
 //  IOC website: http://www.masols.com                                    //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef IOC_CONFIG_H
-#define IOC_CONFIG_H
+#ifndef  IOC_UTILS_EXCEPTION_H
+#define  IOC_UTILS_EXCEPTION_H
 
-// The configured options and settings for ioc
+#include <iostream>
+#include <exception>
+#include <sstream>
 
-#define IOC_VERSION_MAJOR "@IOC_VERSION_MAJOR@"
-#define IOC_VERSION_MINOR "@IOC_VERSION_MINOR@"
+namespace ioc
+{
 
-#if @IOC_THREAD_SAFE@
-  #if IOC_NOTHREAD_SAFE
-    #undef IOC_NOTHREAD_SAFE
-  #endif
-#else
-#define IOC_NOTHREAD_SAFE	1
-#endif
+/**
+ * @brief           ioc's exception
+ * @usage           IOC_THROW(message)
+ **/
+class exception: public std::exception
+{
+    public:
+        exception(std::size_t line,
+                    const char * file,
+                    const char * message)throw()
+        {
+            try{
+                std::stringstream ss;
+                ss<<"exception: ["<<line<<" in "<<file<<"]"<<message;
+                m_message=ss.str();
+            }catch(...)
+            {}
+        }
 
-#endif	/* IOC_CONFIG_H */
+        virtual ~exception()throw() {}
+
+        virtual const char * what() const throw()
+        {
+            return m_message.c_str();
+        }
+
+    private:
+        std::string m_message;
+};
+
+#define IOC_THROW(message) throw ioc::exception(__LINE__, __FILE__, message)
+
+
+}
+#endif   /* ----- #ifndef IOC_UTILS_EXCEPTION_H  ----- */
+

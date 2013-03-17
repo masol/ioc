@@ -88,6 +88,22 @@ if (NOT Java_Runtime_FOUND)
 	MESSAGE(FATAL_ERROR "--> Could not locate required Java Environment - Please check ${Java_JAVA_EXECUTABLE}")
 endif()
 
+set(IOC_VERSION_MAJOR 0)
+set(IOC_VERSION_MINOR 1)
+
+if(${NO_THREAD_SAFE})
+set(IOC_THREAD_SAFE 0)
+else()
+set(IOC_THREAD_SAFE 1)
+endif()
+
+# Configure a header file to pass some of the CMake settings
+# to the source code
+configure_file(
+  "${IOC_SOURCE_DIR}/include/config.h.in"
+  "${IOC_BUILD_DIR}/include/config.h"
+  )
+
 add_subdirectory(src/utils)
 add_subdirectory(src/ioc)
 

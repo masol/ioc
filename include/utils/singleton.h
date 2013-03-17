@@ -17,20 +17,38 @@
 //  IOC website: http://www.masols.com                                    //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef IOC_CONFIG_H
-#define IOC_CONFIG_H
+#ifndef IOC_UTILS_SINGLETON_H
+#define IOC_UTILS_SINGLETON_H
 
-// The configured options and settings for ioc
+#include <boost/utility.hpp>
+#include <boost/thread/once.hpp>
+#include <boost/scoped_ptr.hpp>
 
-#define IOC_VERSION_MAJOR "@IOC_VERSION_MAJOR@"
-#define IOC_VERSION_MINOR "@IOC_VERSION_MINOR@"
+namespace ioc
+{
+    template<class T>
+    class Singleton : private boost::noncopyable
+    {
+    public:
+        static T& instance()
+        {
+            boost::call_once(T::init, m_once_flag);
+            return *m_instance_ptr;
+        }
+        static void init()
+        {
+            m_instance_ptr.reset(new T());
+        }
+    protected:
+        ~Singleton() {}
+        Singleton() {}
+    private:
+        static boost::scoped_ptr<T> m_instance_ptr;
+        static boost::once_flag     m_once_flag;
+    };
+}
 
-#if @IOC_THREAD_SAFE@
-  #if IOC_NOTHREAD_SAFE
-    #undef IOC_NOTHREAD_SAFE
-  #endif
-#else
-#define IOC_NOTHREAD_SAFE	1
-#endif
+template<class T> boost::scoped_ptr<T> ioc::Singleton<T>::m_instance_ptr(0);
+template<class T> boost::once_flag ioc::Singleton<T>::m_once_flag = BOOST_ONCE_INIT;
 
-#endif	/* IOC_CONFIG_H */
+#endif //IOC_UTILS_SINGLETON_H

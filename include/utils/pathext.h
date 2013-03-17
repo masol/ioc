@@ -17,20 +17,36 @@
 //  IOC website: http://www.masols.com                                    //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef IOC_CONFIG_H
-#define IOC_CONFIG_H
+#ifndef IOC_UTILS_PATHEXT_H
+#define IOC_UTILS_PATHEXT_H
 
-// The configured options and settings for ioc
+//#define BOOST_FILESYSTEM_VERSION 3
+#include <boost/filesystem.hpp>
+/**
+ * @file        pathext.h
+ * @brief       扩展了boost::path，增加了link友好的canonicalize方法。
+ **/
 
-#define IOC_VERSION_MAJOR "@IOC_VERSION_MAJOR@"
-#define IOC_VERSION_MINOR "@IOC_VERSION_MINOR@"
+namespace boost{
+namespace filesystem{
+namespace ioc_ext{
 
-#if @IOC_THREAD_SAFE@
-  #if IOC_NOTHREAD_SAFE
-    #undef IOC_NOTHREAD_SAFE
-  #endif
-#else
-#define IOC_NOTHREAD_SAFE	1
-#endif
+	/** @brief 对p执行canonicalize操作，不同于boost::path中的方法，本方法正确处理了符号链接。
+	 */
+	boost::filesystem::path canonicalize(const boost::filesystem::path& p);
+	
+	/** @brief 解析路径p，并将其中含有符号链接的部分替换为实际路径。同时对结果执行canonicalize操作。
+	 */
+	boost::filesystem::path resolve_sym(const boost::filesystem::path& p);
 
-#endif	/* IOC_CONFIG_H */
+	/** @brief 读取符号链接result所对应的真实路径。
+	 *   @param result result保存了请求转化的符号链接，必须其是一个符号链接。
+	 */
+	bool read_symlink(boost::filesystem::path &result);
+
+}//ioc_ext
+}//boost
+}//filesystem
+
+
+#endif //IOC_UTILS_PATHEXT_H

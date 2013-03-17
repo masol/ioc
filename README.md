@@ -1,0 +1,2 @@
+welcome to ioc. ioc(information oritend compiler) is a compiler extend from ECMAscipt. it generate C source code from javascript, result c code is indenpend from ioc. so dynamic eval is not supported.
+ioc enchance AOP feature, it can chain setter/getter.
