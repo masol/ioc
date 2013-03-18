@@ -50,6 +50,8 @@ IF (NOT IOC_NO_DEFAULT_CONFIG)
         SET(WINDOWS_ARCH "x86")
       ENDIF(_carch_x64)
       MESSAGE(STATUS "Building for target ${WINDOWS_ARCH}")
+	  
+	  SET(MSVC_RT_DEBUG_FIX 1)
 
     ELSE(MSVC)
 

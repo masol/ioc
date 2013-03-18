@@ -49,8 +49,11 @@ set(CMAKE_MODULE_PATH
 	"${PROJECT_SOURCE_DIR}/cmake/SpecializedConfig"
 )
 
-INCLUDE(PlatformSpecific)
 INCLUDE(Configuration)
+IF(NOT MSVC_RT_DEBUG_FIX)
+	SET(MSVC_RT_DEBUG_FIX 0)
+ENDIF()
+INCLUDE(PlatformSpecific)
 
 # Install CMake modules
 #add_subdirectory(CMake)

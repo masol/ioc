@@ -1,7 +1,16 @@
 our enviornment in windows :  link static and use shared runtime.
 
-prepare v8:
+depend libs : antlr,llvm,boost,boost.log
 
+boost & boost.log
+1. download boost and boost.log(andysem version: http://sourceforge.net/projects/boost-log/ )
+2. see http://stackoverflow.com/questions/13285714/boost-log-installation-error-on-boost-1-52-0 to patch boost.log
+2. build option : {{{
+     b2 variant=release link=static runtime-link=shared address-model=64
+   }}}
+
+
+prepare v8:
 1. checkout from http://v8.googlecode.com/svn/trunk to c:\depends\v8
 2. cd c:\depends\v8
 3. run command : 

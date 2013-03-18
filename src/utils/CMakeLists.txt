@@ -27,6 +27,7 @@ set(UTILS_SRCS
 	zone.cpp
 	pathext.cpp
 	option.cpp
+	log.cpp
 	)
 
 

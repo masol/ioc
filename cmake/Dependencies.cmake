@@ -18,7 +18,7 @@
 ###########################################################################
 
 include(FindPkgMacros)
-getenv_path(UGP_DEP_DIRS)
+getenv_path(IOC_DEP_DIRS)
 
 #######################################################################
 # Core dependencies
@@ -37,8 +37,8 @@ set(Boost_MINIMUM_VERSION       "1.44.0")
 
 set(Boost_ADDITIONAL_VERSIONS "1.53.0" "1.47.0" "1.46.1" "1.46" "1.46.0" "1.45" "1.45.0" "1.44" "1.44.0")
 
-set(UGP_BOOST_COMPONENTS thread filesystem system)
-find_package(Boost ${Boost_MINIMUM_VERSION} COMPONENTS ${UGP_BOOST_COMPONENTS})
+set(IOC_BOOST_COMPONENTS thread filesystem system)
+find_package(Boost ${Boost_MINIMUM_VERSION} COMPONENTS ${IOC_BOOST_COMPONENTS})
 if (NOT Boost_FOUND)
         # Try again with the other type of libs
         if(Boost_USE_STATIC_LIBS)
@@ -46,7 +46,7 @@ if (NOT Boost_FOUND)
         else()
                 set(Boost_USE_STATIC_LIBS OFF)
         endif()
-        find_package(Boost ${Boost_MINIMUM_VERSION} COMPONENTS ${UGP_BOOST_COMPONENTS})
+        find_package(Boost ${Boost_MINIMUM_VERSION} COMPONENTS ${IOC_BOOST_COMPONENTS})
 endif()
 
 if (Boost_FOUND)

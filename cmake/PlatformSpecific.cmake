@@ -59,6 +59,16 @@ IF(MSVC)
 		# Whole Program Opt. gui display fixed in cmake 2.8.5
 		# See http://public.kitware.com/Bug/view.php?id=6794
 		# /GL will be used to build the code but the selection is not displayed in the menu
+		
+		IF(MSVC_RT_DEBUG_FIX)
+			# VC9 runtime patch. 
+			STRING(REGEX REPLACE "MDd" "MD" CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
+			STRING(REGEX REPLACE "MDd" "MD" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
+
+			STRING(REGEX REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
+			STRING(REGEX REPLACE "/RTC1" "" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
+		ENDIF(MSVC_RT_DEBUG_FIX)
+		
 
 		set(MSVC_RELEASE_COMPILER_FLAGS "/WX- /MP /Ox /Ob2 /Oi /Oy /GT /GL /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /GR /Gd /TP /GL /GF /Ot")
 		set(MSVC_RELEASE_WITH_DEBUG_COMPILER_FLAGS "/Zi")

@@ -19,15 +19,28 @@
 
 #include "config.h"
 #include "utils/option.h"
+#include "utils/log.h"
 #include <stdio.h>
 
 
 int main(int argc,const char * argv[])
 {
 	//initionlize config.
-	if(!ioc::utils::Option::init(argc,argv))
+	if(!ioc::utils::Option::instance().initFromArgs(argc,argv))
 		return 0;
 
+	std::string source("source");
+	if(ioc::utils::Option::instance().is_existed(source))
+	{
+		std::vector<std::string> srcset = ioc::utils::Option::instance().get<std::vector<std::string>>(source);
+		std::vector<std::string>::iterator it = srcset.begin();
+		while(it != srcset.end())
+		{
+			std::cout << "Compiling " << *it << std::endl;
+			it++;
+		}
+	}
+	IOC_LOG_SEV(_ERROR) << "THIS IS A TEST";
 	printf("hello,finish");
 	return 0;
 }

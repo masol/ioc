@@ -17,24 +17,46 @@
 //  IOC website: http://www.masols.com                                    //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef IOC_CONFIG_H
-#define IOC_CONFIG_H
+/**
+ * @file        c_log.h
+ * @brief      提供了log支持的c头文件，可以在C代码中使用。
+ **/
 
-// The configured options and settings for ioc
 
-#define IOC_VERSION_MAJOR "@IOC_VERSION_MAJOR@"
-#define IOC_VERSION_MINOR "@IOC_VERSION_MINOR@"
+#ifndef  IOC_UTILS_C_LOG_H
+#define  IOC_UTILS_C_LOG_H
 
-#if @IOC_THREAD_SAFE@
-  #if IOC_NOTHREAD_SAFE
-    #undef IOC_NOTHREAD_SAFE
-  #endif
-#else
-#define IOC_NOTHREAD_SAFE	1
+#define IOC_LOG_SEV_NORM 		0
+#define IOC_LOG_SEV_DEBUG 		1
+#define IOC_LOG_SEV_INFO 		2
+#define IOC_LOG_SEV_NOTICE		3
+#define IOC_LOG_SEV_WARN		4
+#define IOC_LOG_SEV_ERROR		5
+#define IOC_LOG_SEV_EMERG		6
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#if @MSVC_RT_DEBUG_FIX@
-  #undef _DEBUG
+/** @brief 记录一条日志。
+ * @details 内部调用 来实现日志记录，
+ * 因此本函数仅仅是C语言中使用日志的一个adapter，
+ * 通常配合sprintf使用.
+ */
+void ioc_log(unsigned int severity,const char* msg);
+
+
+/** @brief 当前日志系统是否启用。
+ * @details 内部调用 来检查制定级别的日志是否被允许，
+ * 本函数仅仅是C语言中使用日志的一个adapter.
+ * @return 1 true,0 false.
+ * @todo not implement.return 1 always.
+ */
+int ioc_log_isEanbled(unsigned int severity);
+
+
+#ifdef __cplusplus
+}
 #endif
 
-#endif	/* IOC_CONFIG_H */
+#endif //IOC_UTILS_C_LOG_H

@@ -90,7 +90,7 @@ namespace ioc { namespace utils
 		 * @return 是否不需要退出，返回true需要继续执行。返回false发生了参数错误或者执行了帮助显示。
 		 * @exception  NULL.
 		**/
-		static	bool	init(int argc,const char* argv[]);
+		bool	initFromArgs(int argc,const char* argv[]);
 
         /**
          * @brief           获取属性的值。

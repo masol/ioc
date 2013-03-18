@@ -27,10 +27,16 @@ set(TEST_BASE_SRCS
 	main.cpp
 	JUnitXmlOutputter.cpp
 	JUnitTestResultCollector.cpp
+	)
+	
+set(TEST_CASE_SRCS
 	utils/zone_test.cpp
+	utils/option_test.cpp
+	utils/log_test.cpp
 	)
 
+
 include_directories(${CPPUNIT_INCLUDE_DIR})
-add_executable(ioc_test ${TEST_BASE_SRCS})
+add_executable(ioc_test ${TEST_BASE_SRCS} ${TEST_CASE_SRCS})
 
 TARGET_LINK_LIBRARIES(ioc_test utils ${CPPUNIT_LIBRARIES})
