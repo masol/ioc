@@ -83,10 +83,6 @@ if (NOT Boost_FOUND)
 	MESSAGE(FATAL_ERROR "--> Could not locate required Boost files - Please check ${BOOST_SEARCH_PATH}")
 endif()
 
-#if (NOT V8_FOUND)
-#	MESSAGE(FATAL_ERROR "--> Could not locate required v8 files - Please check ${V8_SEARCH_PATH}")
-#endif()
-
 if (NOT Java_Runtime_FOUND)
 	MESSAGE(FATAL_ERROR "--> Could not locate required Java Environment - Please check ${Java_JAVA_EXECUTABLE}")
 endif()
@@ -108,6 +104,7 @@ configure_file(
   )
 
 add_subdirectory(src/utils)
+add_subdirectory(src/frontend)
 add_subdirectory(src/ioc)
 
 if (NOT CPPUNIT_FOUND)

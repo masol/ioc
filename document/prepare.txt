@@ -8,7 +8,11 @@ boost & boost.log
 2. build option : {{{
      b2 variant=release link=static runtime-link=shared address-model=64
    }}}
-
+   
+antlr & antlr C target:
+1. download antlr and antlr source from http://www.antlr3.org/download.html.
+2. see https://github.com/antlr/antlr/issues/4 to remove antlr c target file.
+3. compile c target.
 
 prepare v8:
 1. checkout from http://v8.googlecode.com/svn/trunk to c:\depends\v8

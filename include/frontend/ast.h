@@ -1,0 +1,2696 @@
+////////////////////////////////////////////////////////////////////////////
+//  Copyright (C) 2012-2013 by authors (see AUTHORS.txt)                  //
+//                                                                        //
+//  This file is part of IOC.                                             //
+//                                                                        //
+//  IOC is free software; you can redistribute it and//or modify it under //
+//  the terms of the IOC Public License(LGPL License) as published by     //
+//  masol.lee.                                                            //
+//                                                                        //
+//  IOC is distributed in the hope that it will be useful,but WITHOUT     //
+//  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY    //
+//  or FITNESS FOR A PARTICULAR PURPOSE.                                  //
+//                                                                        //
+//  You should have received a copy of the IOC License along with this    //
+//  program.  If not, see <http://www.masols.com/licenses>.               //
+//                                                                        //
+//  IOC website: http://www.masols.com                                    //
+////////////////////////////////////////////////////////////////////////////
+ 
+#ifndef  IOC_FRONTEND_AST_H
+#define  IOC_FRONTEND_AST_H
+ 
+
+/**
+ * @file        ast.h
+ * @brief       抽象语法树是一个轻量级的ioc中间表达形式。负责对上层语言做隔离，以便可以最终编译为本地代码。
+ * 				所有的节点都在一个独立的隔离空间分配，这允许我们快速分配并以常数时间销毁全部语法数。 
+ * @relate      测试程序ast_test.cpp
+ **/
+/**
+ * @defgroup varSurvival
+ **/
+
+ 
+#include "utils/zone.h"
+#include "utils/exception.h"
+#include "frontend/asttypes.h"
+#include <boost/unordered_map.hpp>
+#include <string>
+#include <cstring>
+#include <vector>
+#include <map>
+#include <set>
+#include <sstream>
+
+namespace ioc{
+
+/// @brief Data type used in SAST.
+typedef enum {
+	T_INVALID,
+	T_VARIANT,
+	T_VOID,
+	T_BOOLEAN,		// bool
+	T_I2,
+	T_I4,
+	T_UCHAR,
+	T_CHAR,			// char
+	T_USHORT,
+	T_SHORT,		// short
+	T_UINT,
+	T_INT,			// int
+	T_ULONG,
+	T_LONG,			// long
+	T_ULONGLONG,
+	T_LONGLONG,		// long long
+	T_FLOAT,		// float
+	T_DOUBLE,		// double
+	T_LONG_DOUBLE,
+	T_STRING,
+	T_STRUCT,
+	T_ARRAY,
+	T_POINTER,
+	T_ARGLIST,
+	T_FUNCTION,
+	T_EXTERNAL,
+	T_I_N,
+	T_UI128,
+	T_I128,
+	T_ENUM,
+	T_UNION,
+	T_VECTOR,
+	T_OPAQUE
+} VariableType;
+
+std::string getTystringByIntTy(int Ty);
+#define DEF_FORWARD_DECLARATION(type) class type;
+	AST_NODE_LIST(DEF_FORWARD_DECLARATION)
+#undef DEF_FORWARD_DECLARATION
+
+class AstVisitor;
+class Statement;
+class Expression;
+
+
+///@brief 每个自AstNode派生的类需要使用次宏来正确设置AsXXX和node_type派生方法。
+#define AST_DECLARE_REQUIRED_HEADER(className)                                 \
+	public:                                                                    \
+		virtual IOCASTTYPES node_type() const { return IocAst_k##className; }  \
+		virtual className* As##className() {return this; }                     \
+		virtual const className* As##className()const {return this; }          \
+		virtual const std::string& printable_type_name() const {               \
+			static	std::string lv_printable_type_name = #className;           \
+			return lv_printable_type_name ;                                    \
+		}                                                                      \
+		virtual	AstNode* createNode()										   \
+		{																	   \
+			return new className();                                 		   \
+		}																	   \
+		className(const className& ref)										   \
+		{																	   \
+			this->assignFrom(&ref);											   \
+		}
+		
+
+///@brief A node, his child count can be changed, needs this macro body.
+#define AST_CONTAINER_NODE_REQUIRED_HEADER									\
+	protected:																\
+		ZoneVector<AstNode*> m_container; 									\
+	public:																	\
+		virtual size_t childrenCount(void) const{							\
+			return m_container.size();										\
+		}																	\
+		virtual AstNode* getChildren(size_t idx) const {					\
+			return (m_container.size() > idx) ? m_container[idx] : NULL;	\
+		}																	\
+		void setChildren(size_t idx, AstNode* node)							\
+		{																	\
+			m_container[idx] = node;										\
+		}																	\
+		void push_back(AstNode* next){										\
+			if(next)														\
+				m_container.push_back(next);								\
+		}																	\
+		void pop_back()														\
+		{																	\
+			m_container.pop_back();											\
+		}																	\
+		void insert( ZoneVector<AstNode*>::iterator start,					\
+					ZoneVector<AstNode*>::iterator end )					\
+		{																	\
+			m_container.insert(m_container.begin(), start, end);			\
+		}																	\
+		void insert(AstNode *tmp)											\
+		{																	\
+			m_container.insert(m_container.begin(), tmp);					\
+		}																	\
+		void clear()														\
+		{																	\
+			m_container.clear();											\
+		}
+		
+	/*ioc ast 基类 */
+	class AstNode: public ZoneObject {
+	protected:
+		friend class AstVisitor;
+		/// @brief 实现了通用的遍历方法。派生类可以以类似方式实现Traversal并根据AstVisitor的类型重定向到AstNode的不同方法上去——比如codegen.
+		virtual void Traversal(AstVisitor* v);
+
+		//virtual void Traversal(AstNode* node);
+		AstNode(int l,int c,const std::string& filename) : 
+			id_(GetNextId()),
+			line_(l), column_(c),sourceName_(filename)
+		{
+		}
+		AstNode() : 
+			id_(GetNextId()),
+			line_(-1), column_(-1)
+		{
+		}
+	public:
+	    virtual void Traversal(AstVisitor* v, int num);
+		virtual ~AstNode() {}
+		
+		/// @brief print node type name
+		virtual const std::string& printable_type_name () const = 0;
+		
+		/// @brief 虚函数，用于返回孩子数量。
+		virtual	size_t childrenCount(void) const{
+			return 0;
+		}
+		/// @brief 虚函数，用于返回孩子的指针。
+		virtual AstNode*	getChildren(size_t idx) const{
+			return NULL;
+		}
+
+		virtual	AstNode* createNode()		
+		{									
+			return NULL;
+		}									
+
+		/// @brief 用于深度克隆一个相同节点(含子节点)。
+		AstNode* clone()
+		{                                                                   
+			AstNode	*pRet = this->createNode();
+			pRet->assignFrom(this);			
+			size_t i;
+			for(i = 0; i < this->childrenCount(); i++)                      
+			{                                                               
+				if(this->getChildren(i))                                    
+				{                                                           
+					pRet->setChildren(i, this->getChildren(i)->clone());   
+				}                                                           
+				else                                                        
+				{                                                           
+					pRet->setChildren(i, NULL);                            
+				}                                                           
+			}                                                               
+			return pRet;                                                   
+		}
+		
+		virtual void	setChildren(size_t idx,AstNode* node) {}
+		virtual void	push_back(AstNode* next){}
+		virtual void	pop_back(){}
+		virtual void	insert(AstNode* tmp){}
+		virtual void	insert(ZoneVector<AstNode*>::iterator start,					
+					ZoneVector<AstNode*>::iterator end ){}
+		virtual void	clear(){}
+		
+		/// @brief 派生类需要重载这个方法，并返回正确的类型。这由宏AST_DECLARE_REQUIRED_HEADER自动实现。
+		virtual IOCASTTYPES node_type() const { return IocAst_kInvalid; }
+		
+		// Type testing & conversion functions overridden by concrete subclasses.
+		// 缺省返回NULL，允许子类只派生As自己类型()返回reinterpret_cast后的指针就可以了。这由宏AST_DECLARE_REQUIRED_HEADER自动实现。
+		#define DECLARE_NODE_FUNCTIONS(type)                  \
+		  virtual type* As##type() { return NULL; }				\
+		  virtual const type* As##type()const { return NULL; }
+
+		  AST_NODE_LIST(DECLARE_NODE_FUNCTIONS)
+		#undef DECLARE_NODE_FUNCTIONS
+		
+		unsigned id() const { return id_; }
+		static void ResetIds() { current_id_ = 0; }
+		/**********************************************************************
+		 * Debug support info
+		 *********************************************************************/
+		
+		inline int line(void) const
+		{
+			return line_;
+		}
+		
+		inline int pos(void) const
+		{
+			return column_;
+		}
+		
+		inline void line(int line)
+		{
+			line_ = line;
+		}
+		
+		inline void pos(int col)
+		{
+			column_ = col;
+		}
+		
+		/**
+		 * @brief get source file name
+		 * @return 
+		 **/
+		inline const std::string& getSourceName(void) const
+		{
+			return sourceName_;
+		}
+		
+		/**
+		 * @brief set souce file name
+		 * @param name
+		 **/
+		inline void setSourceName(const std::string& name)
+		{
+			sourceName_ = name;
+		}
+	protected:
+		static unsigned GetNextId() {
+			return current_id_++;
+		}
+		static unsigned ReserveIdRange(int n) {
+			unsigned tmp = current_id_;
+			current_id_ += n;
+			return tmp;
+		}
+		
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			if(!psrc)
+			{
+				IOC_THROW("Invalid AstNode Pointer");
+			}
+			this->id_ = psrc->id_;
+			this->line_ = psrc->line_;
+			this->column_ = psrc->column_;
+			this->sourceName_ = psrc->sourceName_;
+		}
+	private:
+		static unsigned current_id_;
+		unsigned id_;
+		// Location of code fragment in source-code file.
+		int 	line_;
+		int 	column_;
+		/// @brief the name of source file, with full path.
+		std::string sourceName_;
+	};
+
+	class Statement : public AstNode{
+		AST_DECLARE_REQUIRED_HEADER(Statement)
+	public:
+		Statement(){}
+	};
+
+	class Expression: public Statement {
+		AST_DECLARE_REQUIRED_HEADER(Expression)
+	public:
+		Expression(){}
+	};
+
+	/**
+	 * @brief `withStatement` parser rule in grammar.
+	 * @details JavaScript Example: NULL
+	 **/
+ 	class WithStatement: public Statement {
+		AST_DECLARE_REQUIRED_HEADER(WithStatement)
+	private:
+		AstNode* m_expression;//孩子节点指针
+		AstNode* m_statement;
+	public:
+
+		WithStatement() :
+			m_expression(NULL), m_statement(NULL) {
+		}
+		
+		virtual	size_t childrenCount(void) const{
+			return 2;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_expression;
+			case 1:
+				return m_statement;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				m_expression = node;
+				break;
+			case 1:
+				m_statement = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline AstNode*	expression(void)const {return m_expression;}
+		inline 	void	expression(AstNode* e){
+			m_expression = e;
+		}
+		inline AstNode*	statement(void)const {return m_statement;}
+		inline 	void	statement(AstNode* s){
+			m_statement = s;
+		}
+	};
+
+	/**
+	 * @brief `caseBlock` parser rule in grammar.
+	 * @details
+	 * JavaScript Example: <pre>case 1: a=1;break;</pre> in:
+	 * @code
+	 *   switch(c){case 1: a=1;break;}
+	 * @endcode
+	 **/
+	class CaseBlock : public AstNode{
+		AST_DECLARE_REQUIRED_HEADER(CaseBlock)
+		AST_CONTAINER_NODE_REQUIRED_HEADER
+	public:
+		CaseBlock() {
+		}
+	};
+
+	/**
+	 * @brief `caseClause` parser rule in grammar.
+	 * @details JavaScript Example: "case 1: a=1;break;" in "case 1: a=1;break; case 2: b=2;break;"
+	 **/
+	class CaseClause : public Statement{
+		AST_DECLARE_REQUIRED_HEADER(CaseClause)
+	protected:
+		AstNode* m_expression;
+		AstNode* m_statement;
+	public:
+		CaseClause() :
+			m_expression(NULL), m_statement(NULL) {
+		}
+		virtual	size_t childrenCount(void) const{
+			return 2;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_expression;
+			case 1:
+				return m_statement;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				m_expression = node;
+				break;
+			case 1:
+				m_statement = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline AstNode* expression(void)const {return m_expression;}
+		inline void expression(AstNode* e){
+			m_expression = e;
+		}
+		inline AstNode* statement(void)const {return m_statement;}
+		inline void statement(AstNode* s){
+			m_statement = s;
+		}
+	};
+
+	/**
+	 * @brief `defaultClause` parser rule in grammar.
+	 * @details JavaScript Example: "default: c=3;break;" in "case 1: a=1;break; case 2: b=2;break; default: c=3;break;"
+	 **/
+	class DefaultClause : public Statement{
+		AST_DECLARE_REQUIRED_HEADER(DefaultClause)
+	protected:
+		AstNode* m_statement;
+	public:
+		DefaultClause() :
+			m_statement(NULL) {
+		}
+		virtual	size_t childrenCount(void) const{
+			return 1;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_statement;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				m_statement = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline AstNode* statement(void)const {return m_statement;}
+		inline void statement(AstNode* s){
+			m_statement = s;
+		}
+	};
+
+	/**
+	 * @brief `forInStatement` parser rule in grammar.
+	 * @details JavaScript Example: "for(i in arr){echo arr[i]}"
+	 **/
+	class ForInStatement : public Statement{
+		AST_DECLARE_REQUIRED_HEADER(ForInStatement)
+	protected:
+		AstNode* m_init;
+		AstNode* m_enumerable;
+		AstNode* m_body;
+	public:
+		ForInStatement() :
+			m_init(NULL), m_enumerable(NULL), m_body(NULL) {
+		}
+		virtual	size_t childrenCount(void) const{
+			return 3;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_init;
+			case 1:
+				return m_enumerable;
+			case 2:
+				return m_body;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				m_init = node;
+				break;
+			case 1:
+				m_enumerable = node;
+				break;
+			case 2:
+				m_body = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline AstNode* init(void)const {return m_init;}
+		inline void init(AstNode* i){
+			m_init = i;
+		}
+		inline AstNode* enumerable(void)const {return m_enumerable;}
+		inline void enumerable(AstNode* e){
+			m_enumerable = e;
+		}
+		inline AstNode* body(void)const {return m_body;}
+		inline void body(AstNode* b){
+			m_body = b;
+		}
+	};
+
+	/**
+	 * @brief `foreachStatement` parser rule in grammar.
+	 * @details JavaScript Example: "foreach($arr as $value){echo $value} or foreach($arr as $key => $value){echo $key.'='.$value}"
+	 **/
+	class ForEachStatement : public Statement{
+		AST_DECLARE_REQUIRED_HEADER(ForEachStatement)
+	protected:
+		AstNode* m_arr;
+		AstNode* m_keyvalue;
+		AstNode* m_body;
+	public:
+		ForEachStatement() :
+			m_arr(NULL), m_keyvalue(NULL), m_body(NULL) {
+		}
+		virtual	size_t childrenCount(void) const{
+			return 3;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_arr;
+			case 1:
+				return m_keyvalue;
+			case 2:
+				return m_body;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				m_arr = node;
+				break;
+			case 1:
+				m_keyvalue = node;
+				break;
+			case 2:
+				m_body = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline AstNode* arr(void)const {return m_arr;}
+		inline void arr(AstNode* a){
+			m_arr = a;
+		}
+		inline AstNode* keyvalue(void)const {return m_keyvalue;}
+		inline void keyvalue(AstNode* kv){
+			m_keyvalue = kv;
+		}
+		inline AstNode* body(void)const {return m_body;}
+		inline void body(AstNode* b){
+			m_body = b;
+		}
+	};
+
+	/**
+	 * @brief `newExpression` parser rule in grammar.
+	 * @details JavaScript Example: "new Object()"
+	 **/
+	class NewExpression : public Expression{
+		AST_DECLARE_REQUIRED_HEADER(NewExpression)
+	protected:
+		AstNode* m_expression;
+	public:
+		NewExpression(void) :
+			m_expression(NULL) {
+		}
+		virtual	size_t childrenCount(void) const{
+			return 1;
+		}
+		/// @brief 虚函数，用于返回孩子的指针。
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx){
+			case 0:
+				return m_expression;
+			default:
+				break;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				m_expression = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline AstNode*	expression(void)const {return m_expression;}
+		inline 	void	expression(AstNode* e){
+			m_expression = e;
+		}
+	};
+
+	/**
+	 * @brief `memberExpression` parser rule in grammar.
+	 * @details JavaScript Example: "Object()" in "new Object()"
+	 **/
+	class MemberExpression : public Expression{
+		AST_DECLARE_REQUIRED_HEADER(MemberExpression)
+	public:
+		MemberExpression(void) :
+			m_expression(NULL),
+			m_arguments(NULL),
+			m_Fd(NULL)
+		{
+		}
+		virtual	size_t childrenCount(void) const{
+			return 3;
+		}
+		/// @brief 虚函数，用于返回孩子的指针。
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx){
+			case 0:
+				return m_expression;
+			case 1:
+				return m_arguments;
+			case 2:
+				return m_Fd;
+			default:
+				break;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				m_expression = node;
+				break;
+			case 1:
+				m_arguments = node;
+				break;
+			case 2:
+				m_Fd = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline AstNode*	expression(void)const {return m_expression;}
+		inline AstNode*	arguments(void)const {return m_arguments;}
+		inline AstNode*	Fd(void)const {return m_Fd;}
+		
+		inline void expression(AstNode* e) { m_expression = e; }
+		inline void arguments(AstNode* a) { m_arguments = a; }
+		inline void Fd(AstNode* e) { m_Fd = e; }
+		
+		
+		inline const std::string& jsObjectName(void) const { return m_jsObjectName; }
+		inline const std::string& jsSourceCode(void) const { return m_jsSourceCode; }
+		inline void jsObjectName(const char* name) { m_jsObjectName = name; }
+		/// @brief set the js source code of current node.
+		inline void jsSourceCode(const char* src) { m_jsSourceCode = src; }
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const MemberExpression *pSrcMember = psrc->AsMemberExpression();
+			if(pSrcMember)
+			{
+				this->m_jsSourceCode = pSrcMember->m_jsSourceCode;
+				this->m_jsObjectName = pSrcMember->m_jsObjectName;
+			}
+			Expression::assignFrom(psrc);
+		}
+	private:
+		AstNode* m_expression;
+		AstNode* m_arguments;
+		AstNode* m_Fd;
+		/**
+		 * @brief Store the js code, like:
+		 * `new Object()`
+		 **/
+		std::string m_jsSourceCode;
+		/// @brief In JavaScript lang, we give object name to it.
+		std::string m_jsObjectName;
+	};
+
+	/**
+	 * @brief `arguments` parser rule in grammar.
+	 * @details JavaScript Example: "dateString" in "new Date(dateString)"
+	 **/
+	class Arguments : public Expression{
+		AST_DECLARE_REQUIRED_HEADER(Arguments)
+		AST_CONTAINER_NODE_REQUIRED_HEADER
+	public:
+		Arguments() {
+		}
+	};
+
+	/**
+	 * @brief ECMA 11.2.1 Property Accessors
+	 * @details JavaScript Example: "a.b"
+	 **/
+	class PropertyAccessor : public Expression {
+		AST_DECLARE_REQUIRED_HEADER(PropertyAccessor)
+	public:
+		PropertyAccessor(void):
+			m_parent(NULL), m_child(NULL)
+		{
+		}
+		virtual size_t childrenCount(void) const {
+			return 2;
+		}
+		/// @brief 虚函数，用于返回孩子的指针。
+		virtual AstNode* getChildren(size_t idx) const{
+			switch(idx){
+			case 0:
+				return m_parent;
+			case 1:
+				return m_child;
+			default:
+				break;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode* node){
+			switch(idx){
+			case 0:
+				m_parent = node;
+				break;
+			case 1:
+				m_child = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline AstNode*	parent(void) const { return m_parent; }
+		inline AstNode*	child(void) const { return m_child; }
+		
+		inline void parent(AstNode* parent) { m_parent = parent; }
+		inline void child(AstNode* child) { m_child = child; }
+		
+	private:
+		AstNode* m_parent;
+		AstNode* m_child;
+	};
+
+	/**
+	 * @brief Multi property accessor, split by "."
+	 * @details JavaScript Example: "a.b.c.fn().d.e.f.fn2().g"
+	 **/
+	class MultiPropertyAccessor : public Expression {
+		AST_DECLARE_REQUIRED_HEADER(MultiPropertyAccessor)
+		AST_CONTAINER_NODE_REQUIRED_HEADER
+	public:
+		MultiPropertyAccessor() {
+		}
+	};
+
+	/**
+	 * @brief `indexSuffix` parser rule in grammar.
+	 * @details JavaScript Example: "[i]" in "a[i]"
+	 **/
+	class IndexSuffix : public Expression{
+		AST_DECLARE_REQUIRED_HEADER(IndexSuffix)
+	public:
+		IndexSuffix(void) :
+			m_expression(NULL) {
+		}
+		
+		virtual	size_t childrenCount(void) const{
+			return 1;
+		}
+		/// @brief 虚函数，用于返回孩子的指针。
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx){
+			case 0:
+				return m_expression;
+			default:
+				break;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				m_expression = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline AstNode*	expression(void)const {return m_expression;}
+		inline 	void	expression(AstNode* e){
+			m_expression = e;
+		}
+	protected:
+		AstNode* m_expression;
+	};
+
+	/**
+	 * @brief The property of a object, containing his name string.
+	 * @details
+	 * Javascript:
+	 *   `propertyReferenceSuffix` parser rule in grammar.
+	 *   src: "property" in "Object.property"
+	 **/
+	class PropertyReferenceSuffix : public Expression{
+		AST_DECLARE_REQUIRED_HEADER(PropertyReferenceSuffix)
+	public:
+		PropertyReferenceSuffix(void) :
+			m_expression(NULL)
+		{
+		}
+		
+		virtual	size_t childrenCount(void) const{
+			return 1;
+		}
+		/// @brief 虚函数，用于返回孩子的指针。
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx){
+			case 0:
+				return m_expression;
+			default:
+				break;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				m_expression = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline AstNode*	expression(void)const {return m_expression;}
+		inline 	void	expression(AstNode* e){
+			m_expression = e;
+		}
+		
+		inline const std::string& name(void) const { return m_name; }
+		void name(const std::string &str) { m_name = str; }
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const PropertyReferenceSuffix* pPropertyReferenceSuffix = psrc->AsPropertyReferenceSuffix();
+			if(pPropertyReferenceSuffix)
+			{
+				this->m_name = pPropertyReferenceSuffix->m_name;
+			}
+			Expression::assignFrom(psrc);
+		}
+	private:
+		std::string m_name;
+		AstNode* m_expression;
+	};
+
+	/**
+	 * @brief Ternary operation
+	 **/
+	class Conditional : public Expression{
+		/// @brief conditional expression
+		AstNode * condition_;
+		
+		/// @brief expression when value is true.
+		AstNode * valueIfTrue_;
+		
+		/// @brief expression when value is false.
+		AstNode * valueIfFalse_;
+		
+		AST_DECLARE_REQUIRED_HEADER(Conditional)
+	public:
+		Conditional(void) :
+			condition_(NULL), valueIfTrue_(NULL), valueIfFalse_(NULL) {
+		}
+		virtual	size_t childrenCount(void) const{
+			return 3;
+		}
+		/// @brief 虚函数，用于返回孩子的指针。
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx){
+			case 0:
+				return condition_;
+			case 1:
+				return valueIfTrue_;
+			case 2:
+				return valueIfFalse_;
+			default:
+				break;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				condition_ = node;
+				break;
+			case 1:
+				valueIfTrue_ = node;
+				break;
+			case 2:
+				valueIfFalse_ = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		/// @brief get the conditional expression.
+		inline AstNode*	condition(void) const { return condition_; }
+		
+		/// @brief get the expression if true.
+		inline AstNode*	valueIfTrue(void) const { return valueIfTrue_; }
+		
+		/// @brief get the expression if false.
+		inline AstNode*	valueIfFalse(void) const { return valueIfFalse_; }
+		
+		/// @brief get the conditional expression.
+		inline void condition(AstNode* e) { condition_ = e; }
+		
+		/// @brief set the expression if true.
+		inline void valueIfTrue(AstNode* e) { valueIfTrue_ = e; }
+		
+		/// @brief set the expression if false.
+		inline void valueIfFalse(AstNode* e) { valueIfFalse_ = e; }
+		
+	};
+
+	/**
+	 * @brief `objectLiteral` parser rule in grammar.
+	 * @details JavaScript Example: "{a:1,b:2,c:3}"
+	 **/
+	class ObjectLiteral : public Expression{
+		AST_DECLARE_REQUIRED_HEADER(ObjectLiteral)
+		AST_CONTAINER_NODE_REQUIRED_HEADER
+	public:
+		ObjectLiteral() {
+		}
+	};
+
+	/**
+	 * @brief `propertyNameAndValue` parser rule in grammar.
+	 * @details JavaScript Example: "a:1" in "{a:1,b:2,c:3}"
+	 **/
+	class PropertyNameAndValue : public Expression{
+		AST_DECLARE_REQUIRED_HEADER(PropertyNameAndValue)
+	public:
+		PropertyNameAndValue(void) :
+			m_name(NULL), m_expression(NULL)
+		{
+		}
+		virtual	size_t childrenCount(void) const{
+			return 2;
+		}
+		/// @brief 虚函数，用于返回孩子的指针。
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx){
+			case 0:
+				return m_name;
+			case 1:
+				return m_expression;
+			default:
+				break;
+			}
+			return NULL;
+		}
+		/// @brief 虚函数，用于设置孩子的指针。
+		virtual void	setChildren(size_t idx,AstNode* node){
+			switch(idx){
+			case 0:
+				m_name = node;
+				break;
+			case 1:
+				m_expression = node;
+				break;
+			default:
+				break;
+			}
+		}
+		inline AstNode*	name(void)const {return m_name;}
+		inline 	void	name(AstNode* n){
+			m_name = n;
+		}
+		inline AstNode*	expression(void)const {return m_expression;}
+		inline 	void	expression(AstNode* e){
+			m_expression = e;
+		}
+	protected:
+		AstNode* m_name;
+		AstNode* m_expression;
+	};
+
+
+	///@brief this is like LLVM::Module.
+	class SourceElements : public AstNode{
+		AST_DECLARE_REQUIRED_HEADER(SourceElements)
+		AST_CONTAINER_NODE_REQUIRED_HEADER
+	public: 
+		SourceElements()
+		{
+		}
+	};
+
+	/**
+	 * @brief Describ a empty statement, with nothing to do.
+	 * @details JavaScript Example: ";"
+	 **/
+	class EmptyStatement : public Statement{
+		AST_DECLARE_REQUIRED_HEADER(EmptyStatement)
+	public:
+		EmptyStatement() {
+		}
+	};
+
+	/**
+	 * @brief The continue statement.
+	 * @details JavaScript Example: "continue i;" OR "continue;"
+	 **/
+	class ContinueStatement: public Statement {
+		AST_DECLARE_REQUIRED_HEADER(ContinueStatement)
+	public:
+		ContinueStatement()
+		{
+		}
+		virtual size_t childrenCount(void) const{
+			return 0;
+		}
+		virtual AstNode* getChildren(size_t idx) const{
+			return NULL;
+		}
+		
+		inline const std::string& identifier(void) const { return m_identifier; }
+		inline void identifier(const std::string &i) { m_identifier = i; }
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const ContinueStatement*	pContinueStatement = psrc->AsContinueStatement();
+			if(pContinueStatement)
+			{
+				this->m_identifier = pContinueStatement->m_identifier;
+			}
+			Statement::assignFrom(psrc);
+		}	
+	private:
+		std::string m_identifier;
+	};
+
+	/**
+	 * @brief The break statement.
+	 * @details JavaScript Example: "break i;" OR "break;"
+	 **/
+	class BreakStatement: public Statement {
+		AST_DECLARE_REQUIRED_HEADER(BreakStatement)
+	public:
+		BreakStatement()
+		{
+		}
+		virtual size_t childrenCount(void) const{
+			return 0;
+		}
+		virtual AstNode* getChildren(size_t idx) const{
+			return NULL;
+		}
+		inline const std::string& identifier(void) const { return m_identifier; }
+		inline void identifier(const std::string &i) { m_identifier = i; }
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const BreakStatement*	pBreakStatement = psrc->AsBreakStatement();
+			if(pBreakStatement)
+			{
+				this->m_identifier = pBreakStatement->m_identifier;
+			}
+			Statement::assignFrom(psrc);
+		}	
+	private:
+		std::string m_identifier;
+	};
+
+	/**
+	 * @brief The return statement.
+	 * @details JavaScript Example: "return i=1;"
+	 **/	
+	class ReturnStatement: public Statement {
+		AST_DECLARE_REQUIRED_HEADER(ReturnStatement)
+	public:
+		ReturnStatement() :
+			m_expression(NULL)
+		{
+		}
+		virtual	size_t childrenCount(void) const{
+			return 1;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_expression;
+			}
+			return NULL;
+		}
+		
+		virtual void	setChildren(size_t idx,AstNode* node){
+			switch(idx){
+			case 0:
+				m_expression = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline AstNode*	expression(void)const {return m_expression;}
+		inline 	void	expression(AstNode* i){
+			m_expression = i;
+		}
+	private:
+		AstNode* m_expression;//孩子节点指针
+	};
+
+	/**
+	 * @brief A label statement in Javascript.
+	 * @details JavaScript Example: "label:i=1" OR "label:if(){}"
+	 **/
+	class LabelledStatement: public Statement {
+		AST_DECLARE_REQUIRED_HEADER(LabelledStatement)
+	public:
+		LabelledStatement() :
+			m_statement(NULL)
+		{
+		}
+		
+		virtual	size_t childrenCount(void) const{
+			return 1;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_statement;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				m_statement = node;
+				break;
+			default:
+				break;
+			}
+		}
+
+		inline const std::string& identifier(void)const { return m_identifier; }
+		inline void identifier(const std::string &i){ m_identifier = i; }
+
+		inline AstNode*	statement(void) const { return m_statement; }
+		inline void statement(AstNode* s){ m_statement = s; }
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const LabelledStatement*	pLabelledStatement = psrc->AsLabelledStatement();
+			if(pLabelledStatement)
+			{
+				this->m_identifier = pLabelledStatement->m_identifier;
+			}
+			Statement::assignFrom(psrc);
+		}
+	private:
+		std::string m_identifier;//节点名称
+		AstNode* m_statement;//孩子节点指针
+	};
+
+	/**
+	 * @brief `switchStatement` parser rule in grammar.
+	 * @details JavaScript Example: "switch(c){case 1: a=1;break}"
+	 **/
+	class SwitchStatement: public Statement {
+		AST_DECLARE_REQUIRED_HEADER(SwitchStatement)
+	public:
+		SwitchStatement() :
+			m_expression(NULL), m_case(NULL) {
+		}
+
+		virtual	size_t childrenCount(void) const{
+			return 2;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_expression;
+			case 1:
+				return m_case;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				m_expression = node;
+				break;
+			case 1:
+				m_case = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline AstNode*	expression(void)const {return m_expression;}
+		inline 	void	expression(AstNode* e){
+			m_expression = e;
+		}
+		inline AstNode*	caseBlock(void)const {return m_case;}
+		inline 	void	caseBlock(AstNode* c){
+			m_case = c;
+		}
+	protected:
+		AstNode* m_expression;//孩子节点指针,指向switch后()中的表达式节点
+		AstNode* m_case;
+	};
+
+	/**
+	 * @brief `doWhileStatement` parser rule in grammar.
+	 * @details JavaScript Example: "do{b=1}while(a==1)"
+	 **/
+	class DoWhileStatement : public Statement{
+		AST_DECLARE_REQUIRED_HEADER(DoWhileStatement)
+	public:
+		DoWhileStatement() :
+			m_body(NULL), m_condition(NULL)
+		{
+		}
+		virtual	size_t childrenCount(void) const{
+			return 2;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_body;
+			case 1:
+				return m_condition;
+			}
+			return NULL;
+		}
+		virtual void	setChildren(size_t idx,AstNode* node){
+			switch(idx){
+			case 0:
+				m_body = node;
+				break;
+			case 1:
+				m_condition = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline AstNode* body(void)const {return m_body;}
+		inline void body(AstNode* d){
+			m_body = d;
+		}
+		inline AstNode* condition(void)const {return m_condition;}
+		inline void condition(AstNode* c){
+			m_condition = c;
+		}
+	private:
+		AstNode* m_body;
+		AstNode* m_condition;
+	};
+
+	/**
+	 * @brief `whileStatement` parser rule in grammar.
+	 * @details JavaScript Example: "while(a==1){b=1}"
+	 **/
+	class WhileStatement : public Statement{
+		AST_DECLARE_REQUIRED_HEADER(WhileStatement)
+	public:
+		WhileStatement() :
+			m_condition(NULL), m_body(NULL) {
+		}
+		virtual	size_t childrenCount(void) const{
+			return 2;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_condition;
+			case 1:
+				return m_body;
+			}
+			return NULL;
+		}
+		virtual void	setChildren(size_t idx,AstNode* node){
+			switch(idx){
+			case 0:
+				m_condition = node;
+				break;
+			case 1:
+				m_body = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline AstNode* condition(void)const {return m_condition;}
+		inline void condition(AstNode* c){
+			m_condition = c;
+		}
+		inline AstNode* body(void)const {return m_body;}
+		inline void body(AstNode* b){
+			m_body = b;
+		}
+	private:
+		AstNode* m_condition;
+		AstNode* m_body;
+	};
+
+	/**
+	 * @brief `forStatement` parser rule in grammar.
+	 * @details JavaScript Example: "for(i=0;i<10;i++){echo i}"
+	 **/
+	class ForStatement : public Statement{
+		AST_DECLARE_REQUIRED_HEADER(ForStatement)
+	public:
+		ForStatement() :
+			m_init(NULL), m_condition(NULL), m_next(NULL), m_body(NULL)
+		{
+		}
+		virtual	size_t childrenCount(void) const{
+			return 4;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_init;
+			case 1:
+				return m_condition;
+			case 2:
+				return m_next;
+			case 3:
+				return m_body;
+			}
+			return NULL;
+		}
+		virtual void	setChildren(size_t idx,AstNode* node){
+			switch(idx){
+			case 0:
+				m_init = node;
+				break;
+			case 1:
+				m_condition = node;
+				break;
+			case 2:
+				m_next = node;
+				break;
+			case 3:
+				m_body = node;
+				break;
+			default:
+				break;
+			}
+		}
+		inline AstNode* init(void)const {return m_init;}
+		inline void init(AstNode* i){
+			m_init = i;
+		}
+		inline AstNode* condition(void)const {return m_condition;}
+		inline void condition(AstNode* c){
+			m_condition = c;
+		}
+		inline AstNode* next(void)const {return m_next;}
+		inline void next(AstNode* n){
+			m_next = n;
+		}
+		inline AstNode* body(void)const {return m_body;}
+		inline void body(AstNode* b){
+			m_body = b;
+		}
+	private:
+		AstNode* m_init;	//@example中的i=0;
+		AstNode* m_condition;	//@example中的i<10;
+		AstNode* m_next;	//@example中的i++
+		AstNode* m_body;	//@example中的{echo i}
+	};
+
+	/**
+	 * @brief `tryStatement` parser rule in grammar.
+	 * @details JavaScript Example: "try{...}catch(err){...}finally{...}"
+	 **/
+	class TryStatement : public Statement
+	{
+		AST_DECLARE_REQUIRED_HEADER(TryStatement)
+	public:
+		TryStatement() :
+			m_statement(NULL), m_catchClause(NULL), m_finallyClause(NULL) {
+		}
+		virtual	size_t childrenCount(void) const{
+			return 3;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_statement;
+			case 1:
+				return m_catchClause;
+			case 2:
+				return m_finallyClause;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				m_statement = node;
+				break;
+			case 1:
+				m_catchClause = node;
+				break;
+			case 2:
+				m_finallyClause = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline AstNode* statement(void)const {return m_statement;}
+		inline void statement(AstNode* s){
+			m_statement = s;
+		}
+		inline AstNode* catchClause(void)const {return m_catchClause;}
+		inline void catchClause(AstNode* c){
+			m_catchClause = c;
+		}
+		inline AstNode* finallyClause(void)const {return m_finallyClause;}
+		inline void finallyClause(AstNode* f){
+			m_finallyClause = f;
+		}
+	private:
+		AstNode* m_statement;
+		AstNode* m_catchClause;
+		AstNode* m_finallyClause;
+	};
+
+	/**
+	 * @brief `catchClause` parser rule in grammar.
+	 * @details JavaScript Example: "catch{...}" in "try{...}catch(err){...}finally{...}"
+	 **/
+	class TryCatchStatement : public Statement{
+		AST_DECLARE_REQUIRED_HEADER(TryCatchStatement)
+	public:
+		TryCatchStatement() :
+			m_identifier(NULL), m_statement(NULL) {
+		}
+		virtual	size_t childrenCount(void) const{
+			return 2;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_identifier;
+			case 1:
+				return m_statement;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				m_identifier = node;
+				break;
+			case 1:
+				m_statement = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline AstNode* init(void)const {return m_identifier;}
+		inline void init(AstNode* i){
+			m_identifier = i;
+		}
+		inline AstNode* statement(void)const {return m_statement;}
+		inline void statement(AstNode* s){
+			m_statement = s;
+		}
+	private:
+		AstNode* m_identifier;
+		AstNode* m_statement;
+	};
+
+	/**
+	 * @brief `finallyClause` parser rule in grammar.
+	 * @details JavaScript Example: "finally{...}" in "try{...}catch(err){...}finally{...}"
+	 **/
+	class TryFinallyStatement : public Statement{
+		AST_DECLARE_REQUIRED_HEADER(TryFinallyStatement)
+	public:
+		TryFinallyStatement() :
+			m_statement(NULL) {
+		}
+		virtual	size_t childrenCount(void) const{
+			return 1;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_statement;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				m_statement = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline AstNode* statement(void)const {return m_statement;}
+		inline void statement(AstNode* s){
+			m_statement = s;
+		}
+	private:
+		AstNode* m_statement;
+	};
+
+	/**
+	 * @brief If Then Else statement.
+	 * @details JavaScript Example: "if(a==1){b=1}else{b=2}"
+	 **/
+	class IfStatement : public Statement{
+		AST_DECLARE_REQUIRED_HEADER(IfStatement)
+	public:
+		IfStatement() :
+			m_condition(NULL), m_then(NULL), m_else(NULL) {
+		}
+		virtual	size_t childrenCount(void) const{
+			return 3;
+		}
+		
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_condition;
+			case 1:
+				return m_then;
+			case 2:
+				return m_else;
+			}
+			return NULL;
+		}
+		
+		virtual void	setChildren(size_t idx,AstNode* node){
+			switch(idx){
+			case 0:
+				m_condition = node;
+				break;
+			case 1:
+				m_then = node;
+				break;
+			case 2:
+				m_else = node;
+			default:
+				break;
+			}
+		}
+		inline AstNode* conditionExpression(void)const {return m_condition;}
+		inline void conditionExpression(AstNode* c){
+			m_condition = c;
+		}
+		inline AstNode* thenStatement(void)const {return m_then;}
+		inline void thenStatement(AstNode* t){
+			m_then = t;
+		}
+		inline AstNode* elseStatement(void)const {return m_else;}
+		inline void elseStatement(AstNode* e){
+			m_else = e;
+		}
+	private:
+		AstNode* m_condition;
+		AstNode* m_then;
+		AstNode* m_else;
+	};
+
+	/**
+	 * @class Assignment
+	 * @details \
+	 * Grammars:
+	 *   javascript.g: `assignmentExpression`
+	 *   java.g: ``
+	 * Examples:
+	 *   JavaScript: `a=1`
+	 *   Java: `a=1`
+	 **/
+	class Assignment : public AstNode{
+		AST_DECLARE_REQUIRED_HEADER(Assignment)
+	public:
+		Assignment(void) :
+			m_operator(T_INVALID), m_left(NULL), m_right(NULL){
+		}
+		
+		/// @brief assignment operation token
+		/// @details about shift op:
+		/// wikipedia:Arithmetic_shift
+		/// wikipedia:Logical_shift
+		/// https://developer.mozilla.org/en/JavaScript/Reference/operators/bitwise_operators#.3e.3e_(Sign-propagating_right_shift)
+		enum {
+			T_INVALID,
+			T_EQU,			// `=`
+			T_MUL,			// `*=`
+			T_DIV,			// `/=`
+			T_MOD,			// `%=`
+			T_ADD,			// `+=`
+			T_SUB,			// `-=`
+			T_SHL,			// `<<=` logical/arithmetic shift left
+			T_SHR,			// `>>=` arithmetic shift right
+			T_SHR_ZEROFILL,	// `>>>=` logical shift right
+			T_AND,			// `&=`
+			T_XOR,			// `^=`
+			T_OR			// `|=`
+		};
+
+		char print_value(void) const
+		{
+			return m_operator;
+		}
+		
+		virtual	size_t childrenCount(void) const
+		{
+			return 2;
+		}
+		
+		/// @brief 虚函数，用于返回孩子的指针。
+		virtual AstNode* getChildren(size_t idx) const
+		{
+			switch(idx){
+			case 0:
+				return m_left;
+			case 1:
+				return m_right;
+			default:
+				break;
+			}
+			return NULL;
+		}
+		
+		virtual void setChildren(size_t idx, AstNode* node)
+		{
+			switch(idx) {
+			case 0:
+				m_left = node;
+				break;
+			case 1:
+				m_right = node;
+				break;
+			default:
+				break;
+			}
+		}
+		/** Get section */
+		/// @brief Get the left child.
+		inline AstNode*	left(void) const { return m_left; }
+		/// @brief Set a node pointer to the left child
+		inline void left(AstNode* l) { m_left = l; }
+		
+		/// @brief Get the right child.
+		inline AstNode*	right(void) const { return m_right; }
+		/// @brief Set a node pointer to the right child
+		inline void right(AstNode* r) { m_right = r; }
+		
+		/// @brief Get the operator of node.
+		inline char operater(void) const { return m_operator; }
+		/// @brief Set the operator of node.
+		inline void operater(char o) { m_operator = o; }
+		
+		
+		/// @brief Get the operator string of node.
+		inline const std::string& opName(void) const { return opName_; }
+		/// @brief Set the operator string of node.
+		inline void opName(std::string name) { opName_ = name; }
+
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const Assignment*	pAssignment = psrc->AsAssignment();
+			if(pAssignment)
+			{
+				this->m_operator = pAssignment->m_operator;
+				this->opName_ = pAssignment->opName_;
+			}
+			AstNode::assignFrom(psrc);
+		}
+	private:
+		/// @brief 左孩子
+		AstNode* m_left;
+		
+		/// @brief 右孩子
+		AstNode* m_right;
+		
+		/// @brief 上述枚举中的操作符EQU等
+		char m_operator;
+		
+		/// @brief the string of operator of node.
+		std::string opName_;
+	};
+
+	/**
+	 * @brief We are calling a function.
+	 * @details JavaScript Example: \
+	 *   "fn()"
+	 *   OR
+	 *   "fn()" in "bar=fn();"
+	 **/
+	class Call : public Expression {
+		typedef	Expression	inherit;
+		AST_DECLARE_REQUIRED_HEADER(Call)
+	public:
+		Call(void) :
+			m_expression(NULL), m_arguments(NULL)
+		{
+		}
+
+		virtual	size_t childrenCount(void) const{
+			return 2;
+		}
+		/// @brief 虚函数，用于返回孩子的指针。
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx){
+			case 0:
+				return m_expression;
+			case 1:
+				return m_arguments;
+			default:
+				break;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				m_expression = node;
+				break;
+			case 1:
+				m_arguments = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		/// @brief Give you the name of the function which you are calling.
+		inline const std::string& name(void) const { return m_name; }
+		/// @brief Give me the function name.
+		inline void name(const std::string &n) {
+			m_name = n;
+		}
+
+		inline AstNode*	expression(void)const {return m_expression;}
+		inline 	void	expression(AstNode* e){
+			m_expression = e;
+		}
+
+		inline AstNode*	arguments(void)const {return m_arguments;}
+		inline 	void	arguments(AstNode* a){
+			m_arguments = a;
+		}
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const Call*	pCall = psrc->AsCall();
+			if(pCall)
+			{
+				this->m_name = pCall->m_name;
+			}
+			inherit::assignFrom(psrc);
+		}
+	private:
+		/**
+		 * @brief Function name.
+		 * * If a javascript function, his function name is a expression,
+		 * this is left as empty string.
+		 * @details JavaScript Example:
+		 * You give a "fn(){...}", and his function name is "fn".
+		 **/
+		std::string m_name;
+		/**
+		 * @brief Javascript function name expression
+		 * * The name of js function may be a expression.
+		 * @details
+		 * JavaScript Example: `(function(){alert(1);})();`
+		 **/
+		AstNode* m_expression;
+		/**
+		 * @brief Argument list of function
+		 **/
+		AstNode* m_arguments;
+	};
+
+	/**
+	 * @brief `arrayLiteral` parser rule in grammar.
+	 * @details JavaScript Example: "[a,b,c]"
+	 **/
+	class ArrayLiteral : public Expression{
+		AST_DECLARE_REQUIRED_HEADER(ArrayLiteral)
+		AST_CONTAINER_NODE_REQUIRED_HEADER
+	public:
+		ArrayLiteral() {
+		}
+	};
+
+	/**
+	 * @brief Compare operation
+	 * @details JavaScript Example: \
+	 *   "a<b"
+	 *   OR
+	 *   "a==b"
+	 **/
+	class CompareOperation: public Expression{
+		typedef	Expression inherit;
+		AST_DECLARE_REQUIRED_HEADER(CompareOperation)
+	public:
+		CompareOperation() : 
+			m_operator(T_INVALID), m_left(NULL), m_right(NULL)
+		{
+		}
+		
+		enum{
+			T_INVALID,
+			T_LT,				// `<`
+			T_GT,				// `>`
+			T_EQU,				// `==`
+			T_NOTEQU,			// `!=`
+			T_LE,				// `<=`
+			T_GE,				// `>=`
+			T_EXEQU,			// `===` js only
+			T_EXNOTEQU,			// `!==` js only
+			T_INSTANCEOF,		// `instanceof` js only
+			T_IN,				// `in` js only
+			T_INIT              //':'
+		};
+		
+		virtual	size_t childrenCount(void) const{
+			return 2;
+		}
+		int print_value() const{
+			return m_operator;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_left;
+			case 1:
+				return m_right;
+			}
+			return NULL;
+		}
+		
+		virtual void	setChildren(size_t idx,AstNode* node){
+			switch(idx){
+			case 0:
+				m_left=node;
+				break;
+			case 1:
+				m_right=node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		/// @brief ...
+		inline AstNode*	left(void)const {return m_left;}
+		/// @brief ...
+		inline void left(AstNode* l) { m_left = l; }
+		
+		/// @brief ...
+		inline AstNode*	right(void)const {return m_right;}
+		/// @brief ...
+		inline void right(AstNode* r) { m_right = r; }
+		
+		/// @brief ...
+		inline char operater(void) const { return m_operator; }
+		/// @brief ...
+		inline void operater(char o) { m_operator = o; }
+		
+		/// @brief Get the operation name string.
+		inline const std::string& opName(void) const { return opName_; }
+		/// @brief Set the operation name string.
+		inline void opName(const std::string &name) { opName_ = name; }
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const CompareOperation*	pCompareOperation = psrc->AsCompareOperation();
+			if(pCompareOperation)
+			{
+				this->opName_ = pCompareOperation->opName_;
+				this->m_operator = pCompareOperation->m_operator;
+			}
+			inherit::assignFrom(psrc);
+		}
+	private:
+		/// @brief Save the op as a string, only for debug when printing AST.
+		std::string opName_;
+		/// @brief 上述枚举中的操作符等
+		char m_operator;
+		AstNode *m_left;
+		AstNode	*m_right;
+	};
+
+	/**
+	 * .g:
+	 * additiveExpression
+	 * multiplicativeExpression
+	 * eg:
+	 *  1+2 OR "a=1,b=2" in "if(a=1,b=2){}"
+	 **/
+	class BinaryOperation: public Expression{
+		typedef	Expression inherit;
+		AST_DECLARE_REQUIRED_HEADER(BinaryOperation)
+	public:
+		BinaryOperation() : 
+			m_operator(T_INVALID), m_left(NULL), m_right(NULL)
+		{
+		}
+
+		//char getchildType(AstNode *child);
+		enum{
+			T_INVALID,
+			// Binary operation.
+			T_ADD,			// `+`
+			T_SUB,			// `-`
+			T_MUL,			// `*`
+			T_DIV,			// `/`
+			T_MOD,			// `%`
+			T_BIT_OR,		// `|`
+			T_BIT_XOR,		// `^`
+			T_BIT_AND,		// `&`
+			T_SHL,			// `<<`
+			T_SHR,			// `>>`
+			T_SAR,			// `>>>`
+			T_OR,			// `||`
+			T_AND,			// `&&`
+			// Special operation.
+			T_COMMA,		// `,`
+			T_MEMBER		//'.|->'
+		};
+		virtual	size_t childrenCount(void) const{
+			return 2;
+		}
+		int print_value() const{
+			return m_operator;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_left;
+			case 1:
+				return m_right;
+			}
+			return NULL;
+		}
+		
+		virtual void	setChildren(size_t idx,AstNode* node){
+			switch(idx){
+			case 0:
+				m_left=node;
+				break;
+			case 1:
+				m_right=node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		/// @brief ...
+		inline AstNode*	left(void)const {return m_left;}
+		/// @brief ...
+		inline void left(AstNode* l) { m_left = l; }
+		
+		/// @brief ...
+		inline AstNode*	right(void)const {return m_right;}
+		/// @brief ...
+		inline void right(AstNode* r) { m_right = r; }
+		
+		/// @brief ...
+		inline char operater(void) const { return m_operator; }
+		/// @brief ...
+		inline void operater(char op) { m_operator = op; }
+		
+		/// @brief Get the op name string.
+		inline const std::string& opName(void) const { return opName_; }
+		/// @brief Set the op name string.
+		inline void opName(const std::string &name) { opName_ = name; }
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const BinaryOperation*	pBinaryOperation = psrc->AsBinaryOperation();
+			if(pBinaryOperation)
+			{
+				this->opName_ = pBinaryOperation->opName_;
+				this->m_operator = pBinaryOperation->m_operator;
+			}
+			inherit::assignFrom(psrc);
+		}
+	private:
+		/// @brief 二元操作符标示 enum数据
+		int m_operator;
+		
+		/// @brief Save the op as a string, only for debug when printing AST.
+		std::string opName_;
+
+		/// @brief 左操作数
+		AstNode *m_left;
+		
+		/// @brief 右操作数
+		AstNode	*m_right;
+	};
+
+	/**
+	 * variable name
+	 **/
+	class VariableProxy: public Expression {
+		typedef	Expression inherit;
+		AST_DECLARE_REQUIRED_HEADER(VariableProxy)
+	public:
+		VariableProxy()
+		{
+		}
+		/**
+		 * Get Action
+		 **/
+		
+		///@brief Get the name string of variable.
+		inline const std::string& js_identifier(void) const { return m_js_identifier; }
+		///@brief Set the name string of variable.
+		inline void js_identifier(const std::string &i) { m_js_identifier = i; }
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const VariableProxy*	pVariableProxy = psrc->AsVariableProxy();
+			if(pVariableProxy)
+			{
+				this->m_js_identifier = pVariableProxy->m_js_identifier;
+			}
+			inherit::assignFrom(psrc);
+		}
+	private:
+		/**
+		 * Javascript feature.
+		 **/
+		/// @brief name string of variable
+		std::string m_js_identifier;
+	};
+
+	/**
+	 * @brief A string.
+	 *   example "abc"
+	 **/
+	class StringLiteral : public Expression{
+		typedef	Expression	inherit;
+		AST_DECLARE_REQUIRED_HEADER(StringLiteral)
+	public:
+		StringLiteral() {
+		}
+		inline const std::string &str(void) const { return m_str; }
+		inline void str(const std::string &s) { m_str = s; }
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const StringLiteral*	pStringLiteral = psrc->AsStringLiteral();
+			if(pStringLiteral)
+			{
+				this->m_str = pStringLiteral->m_str;
+			}
+			inherit::assignFrom(psrc);
+		}
+	private:
+		// 
+		std::string m_str;
+	};
+
+	/**
+	 * @brief A char.
+	 *   example 'a'
+	 **/
+    class CharacterLiteral : public Expression
+	{
+		typedef	Expression	inherit;
+		AST_DECLARE_REQUIRED_HEADER(CharacterLiteral)
+    public:
+	    CharacterLiteral() {
+		}
+		
+		inline int chr(void) const {
+			return m_char;
+		}		
+		inline void chr(int ch) {
+			m_char = ch;
+		}
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const CharacterLiteral*	pCharacterLiteral = psrc->AsCharacterLiteral();
+			if(pCharacterLiteral)
+			{
+				this->m_char = pCharacterLiteral->m_char;
+			}
+			inherit::assignFrom(psrc);
+		}
+	private:
+	    int m_char;
+	};
+				
+	/**
+	 * @brief A number
+	 * @details \
+	 *   JavaScript Example: "123" in "num=123;"
+	 **/
+	class NumberLiteral : public Expression{
+		typedef	Expression inherit;
+		AST_DECLARE_REQUIRED_HEADER(NumberLiteral)
+	public:
+		NumberLiteral() {
+		}
+		inline const std::string& num(void) { return m_num; }
+		inline void num(const std::string &n) { m_num = n; }
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const NumberLiteral*	pNumberLiteral = psrc->AsNumberLiteral();
+			if(pNumberLiteral)
+			{
+				this->m_num = pNumberLiteral->m_num;
+			}
+			inherit::assignFrom(psrc);
+		}
+	private:
+		std::string m_num;
+	};
+
+	/**
+	 * @brief A number, in C language we called int type.
+	 * @details \
+	 *   Javascript : "123" in "num=123;"
+	 *   C : "123" in "int a = 123;"
+	 **/
+	class IntNumberLiteral : public Expression {
+		typedef	Expression inherit;
+		AST_DECLARE_REQUIRED_HEADER(IntNumberLiteral)
+	public:
+		IntNumberLiteral() :m_num(0)
+		{
+		}
+		
+		inline int num(void) { return m_num; }
+		inline void num(int n) { m_num = n; }
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const IntNumberLiteral*	pIntNumberLiteral = psrc->AsIntNumberLiteral();
+			if(pIntNumberLiteral)
+			{
+				this->m_num = pIntNumberLiteral->m_num;
+			}
+			inherit::assignFrom(psrc);
+		}
+	private:
+		///@brief number value of node.
+		int m_num;
+	};
+
+	/**
+	 * @brief A number, in C language we called double type.
+	 * @details \
+	 *   Javascript : "123.456" in "num=123.456;"
+	 **/
+	class DoubleNumberLiteral : public Expression {
+		typedef	Expression inherit;
+		AST_DECLARE_REQUIRED_HEADER(DoubleNumberLiteral)
+	public:
+		DoubleNumberLiteral() :m_num(0)
+		{
+		}
+		inline double num(void) { return m_num; }
+		inline void num(double n) { m_num = n; }
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const DoubleNumberLiteral*	pDoubleNumberLiteral = psrc->AsDoubleNumberLiteral();
+			if(pDoubleNumberLiteral)
+			{
+				this->m_num = pDoubleNumberLiteral->m_num;
+			}
+			inherit::assignFrom(psrc);
+		}		
+	private:
+		///@brief number value of node.
+		double m_num;
+	};
+
+	/**
+	 * @brief A Boolean.
+	 * @details \
+	 *   Javascript : "true" in "a=true;"
+	 **/
+	class BooleanLiteral : public Expression{
+		typedef	Expression	inherit;
+		AST_DECLARE_REQUIRED_HEADER(BooleanLiteral)
+	public:
+		BooleanLiteral() : m_isTrue(false)
+		{
+		}
+		void setValue(bool value) { m_isTrue = value;}
+		bool getValue(){return m_isTrue;}
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const BooleanLiteral*	pBooleanLiteral = psrc->AsBooleanLiteral();
+			if(pBooleanLiteral)
+			{
+				this->m_isTrue = pBooleanLiteral->m_isTrue;
+			}
+			inherit::assignFrom(psrc);
+		}		
+	private:
+		bool m_isTrue;
+	};
+
+	/**
+	 * @brief Null value.
+	 * @details \
+	 *   Javascript : "null" in "a=null;"
+	 **/
+	class NullLiteral : public Expression{
+		typedef Expression inherit;
+		AST_DECLARE_REQUIRED_HEADER(NullLiteral)
+	public:
+		NullLiteral()
+		{
+		}
+		inline const std::string& value(){return m_value;}
+		inline void value(const std::string& t){m_value = t;}
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const NullLiteral*	pNullLiteral = psrc->AsNullLiteral();
+			if(pNullLiteral)
+			{
+				this->m_value = pNullLiteral->m_value;
+			}
+			inherit::assignFrom(psrc);
+		}
+	private:
+		std::string m_value;		
+	};
+
+	/**
+	 * @brief `functionDeclaration` parser rule in grammar.
+	 * @details JavaScript Example: "function fn(a){a=1};"
+	 **/
+	class FunctionDeclaration : public Statement{
+		typedef Statement inherit;
+		AST_DECLARE_REQUIRED_HEADER(FunctionDeclaration)
+	public:
+		FunctionDeclaration() : 
+			m_param(NULL), m_body(NULL)
+		{
+		}
+		
+		virtual	size_t childrenCount(void) const{
+			return 2;
+		} 
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_param;
+			case 1:
+				return m_body;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				m_param = node;
+				break;
+			case 1:
+				m_body = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		///@brief get the function name string.
+		inline const std::string& name(void) const { return m_name; }
+		///@brief set the name of function.
+		inline void name(const std::string &str) { m_name = str; }
+		
+		inline AstNode*	param(void) const {return m_param;}
+		inline void param(AstNode* p) { m_param = p; }
+
+		inline AstNode*	body(void) const {return m_body;}
+		inline void body(AstNode* b) { m_body = b; }
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const FunctionDeclaration*	pFunctionDeclaration = psrc->AsFunctionDeclaration();
+			if(pFunctionDeclaration)
+			{
+				this->m_name = pFunctionDeclaration->m_name;
+			}
+			inherit::assignFrom(psrc);
+		}
+	private:
+		AstNode	*m_param;
+		AstNode	*m_body;
+		///@brief the name of function.
+		std::string m_name;
+	};
+
+	/**
+	 * @brief `functionExpression` parser rule in grammar.
+	 * @details JS example "function(a){a=1}" in "var fn=function(a){a=1};"
+	 **/
+	class FunctionExpression : public Statement
+	{
+		AST_DECLARE_REQUIRED_HEADER(FunctionExpression)
+	public:
+		FunctionExpression() : 
+			m_param(NULL), m_body(NULL)
+		{
+		}
+		
+		virtual	size_t childrenCount(void) const{
+			return 2;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_param;
+			case 1:
+				return m_body;
+			}
+			return NULL;
+		}
+		
+		inline AstNode*	param(void)const {return m_param;}
+		inline 	void	param(AstNode* p){
+			m_param = p;
+		}
+
+		inline AstNode*	body(void)const {return m_body;}
+		inline	void	body(AstNode* b){
+			m_body = b;
+		}
+	private:
+		/// @brief a function-expression may have no name(identifier).
+		AstNode	*m_param;
+		AstNode	*m_body;
+	};
+
+	/**
+	 * @brief `formalParameterList` parser rule in grammar.
+	 * @details JavaScript Example: "(a,b,c)" in "function(a,b,c)"
+	 **/
+	class FormalParameterList : public AstNode{
+		AST_DECLARE_REQUIRED_HEADER(FormalParameterList)
+		AST_CONTAINER_NODE_REQUIRED_HEADER
+	public:
+		FormalParameterList()
+		{
+		}
+	};
+
+	class UnaryOperation : public Expression{
+		typedef	Expression	inherit;
+		AST_DECLARE_REQUIRED_HEADER(UnaryOperation)
+	public:
+		UnaryOperation() : 
+			m_operator(T_INVALID), m_expression(NULL)
+		{
+		}
+		
+		enum{
+			T_INVALID,
+			T_ADDADD,		// `++` //PRE_INC//POST_INC
+			T_SUBSUB,		// `--` //PRE_DEC//POST_DEC
+            T_PLUS,			// `+`
+            T_MINUS,		// `-`
+            T_TILDE,		// `~`
+            T_NOT,			// `!`
+			T_ADDRESS,		// '&取地址'
+			T_POINTERTO,	// '(*p)中 * 运算'
+			K_DELETE,		// js delete keyword
+			K_VOID,			// js void keyword
+			K_TYPEOF		// js typeof keyword
+		};
+
+		virtual	size_t childrenCount(void) const{
+			return 1;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_expression;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode* node){
+			switch(idx){
+			case 0:
+				m_expression = node;
+				break;
+			default:
+				break;
+			}
+		}
+		/// @brief Get op
+		inline char operater(void) const { return m_operator; }
+		/// @brief Set op
+		inline void operater(char ch) { m_operator = ch; }
+		
+		/// @brief Get the op name string.
+		inline const std::string& opName(void) const { return opName_; }
+		/// @brief Set the op name string.
+		inline void opName(const std::string &name) { opName_ = name; }
+
+		/// @brief ...
+		inline AstNode*	expression(void) const { return m_expression; }
+		/// @brief ...
+		inline void expression(AstNode* e) { m_expression = e; }
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const UnaryOperation*	pUnaryOperation = psrc->AsUnaryOperation();
+			if(pUnaryOperation)
+			{
+				this->m_operator = pUnaryOperation->m_operator;
+				this->opName_ = pUnaryOperation->opName_;
+			}
+			inherit::assignFrom(psrc);
+		}
+	private:
+		/// @brief 操作符标示，enum数据
+		char 	m_operator;
+
+		/// @brief Save the op as a string, only for debug when printing AST.
+		std::string opName_;
+		
+		/// @brief 一元运算孩子节点
+		AstNode	*m_expression;
+	};
+
+	/**
+	 * @brief `throwStatement` parser rule in grammar.
+	 * @details JavaScript Example: "throw a=1;"
+	 **/
+	class Throw : public Expression
+	{
+		AST_DECLARE_REQUIRED_HEADER(Throw)
+	public:
+		Throw() : m_expression(NULL) {}
+		
+		virtual	size_t childrenCount(void) const{
+			return 1;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_expression;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				m_expression = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline AstNode*	expression(void)const {return m_expression;}
+		inline 	void	expression(AstNode* e){
+			m_expression = e;
+		}
+	private:
+		AstNode	*m_expression;
+	};
+
+	/**
+	 * @brief Declare a list of variables.
+	 * @details
+	 *   JavaScript: "a=1,b,c=2,d,e,f=3" in "var a=1,b,c=2,d,e,f=3"
+	 **/
+	class VariableDeclarationList : public AstNode{
+		AST_DECLARE_REQUIRED_HEADER(VariableDeclarationList)
+		AST_CONTAINER_NODE_REQUIRED_HEADER
+	public:
+		VariableDeclarationList() {
+		}
+	};
+
+	/**
+	 * @brief An array or so called map.
+	 * @details 
+	 *   JavaScript: "a[b+c]"
+	 **/
+	class Map: public Expression{
+		typedef	Expression inherit;
+		AST_DECLARE_REQUIRED_HEADER(Map)
+	public:
+		Map() : 
+			m_expression(NULL) {
+		}
+
+		virtual	size_t childrenCount(void) const{
+			return 1;
+		}
+		virtual AstNode*	getChildren(size_t idx) const{
+			switch(idx)
+			{
+			case 0:
+				return m_expression;
+			}
+			return NULL;
+		}
+		
+		/// @brief 虚函数，用于给孩子赋值。
+		virtual void setChildren(size_t idx, AstNode * node)
+		{
+			switch(idx)
+			{
+			case 0:
+				m_expression = node;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		inline const std::string& identifier(void) const { return m_identifier; }
+		inline void identifier(const std::string &i) { m_identifier = i; }
+
+		inline AstNode*	expression(void) const {return m_expression;}
+		inline void expression(AstNode* e) { m_expression = e; }
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const Map*	pMap = psrc->AsMap();
+			if(pMap)
+			{
+				this->m_identifier = pMap->m_identifier;
+			}
+			inherit::assignFrom(psrc);
+		}
+	private:
+		std::string m_identifier;
+		AstNode	*m_expression;
+	};
+
+} // namespace ioc
+
+#endif //IOC_FRONTEND_AST_H

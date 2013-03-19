@@ -63,6 +63,7 @@ IF (NOT IOC_NO_DEFAULT_CONFIG)
       SET(BOOST_SEARCH_PATH         "${IOC_DEP_DIRS}/boost_1_53_0")
 #	  SET(V8_SEARCH_PATH        	"${IOC_DEP_DIRS}/v8")
 	  SET(Java_JAVA_EXECUTABLE    	"C:\\Program Files\\Java\\jre7\\bin\\java.exe")
+	  SET(ANTLR_JAR_PATH    	"${IOC_DEP_DIRS}/javalib/antlr-3.5-complete.jar")
 	ENDIF(DEFINED ENV{IOC_DEP_DIRS})
 	
   ENDIF(WIN32)

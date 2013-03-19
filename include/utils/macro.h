@@ -188,7 +188,7 @@ static int PointerValueCompare(const T* a, const T* b) {
 }
 
 /** @brief Returns the smallest power of two which is >= x.
- * @detail If you pass in a number that is already a power of two, 
+ * @details If you pass in a number that is already a power of two, 
  * it is returned as is.Implementation is from "Hacker's Delight"
  * by Henry S. Warren, Jr.
  * figure 3-3, page 48, where the function is called clp2.
