@@ -44,6 +44,7 @@ ADD_CUSTOM_COMMAND(
 
 set(FRONTEND_SRCS
 	antlrhelper.cpp
+	astfactory.cpp
 #	${IOC_ANTLR_OUTPUT_DIR}/javascriptParser.c
 #	${IOC_ANTLR_OUTPUT_DIR}/javascriptLexer.c
 	)

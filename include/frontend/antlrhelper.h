@@ -38,26 +38,48 @@ extern "C" {
 
 #define SOURCE_NAME(istream) (char*)(istream->getSourceName(istream)->chars)
 
+// we only save file name in SourceElement node.so no filename here.
+typedef	struct	_tag_ioc_src_info{
+	int		m_line;
+	int		m_column;
+}ioc_src_info;
+
+//void	IOC_ASSIGN_SRC_INFO(pANTLR3_COMMON_TOKEN  *token,ioc_src_info *srcinfo);
+#define	IOC_ASSIGN_SRC_INFO(token,srcinfo)			\
+{													\
+	(srcinfo).m_line = (token)->line;				\
+	(srcinfo).m_column = (token)->charPosition;		\
+}
+
+#define	IOC_INIT_SRC_INFO(srcinfo)		\
+{										\
+	(srcinfo).m_line = 0;				\
+	(srcinfo).m_column = 0;				\
+}
+
 /**
  * @brief Create ioc AST nodes.
  * 不用创建过度型节点。
  **/
 
-AST_NODE_HANDLE IOC_CreateSourceElements(int location[], const char*);
+AST_NODE_HANDLE IOC_CreateSourceElements(ioc_src_info *srcInfo, const char*);
 AST_NODE_HANDLE	IOC_AppendSourceElements(AST_NODE_HANDLE srcEle, AST_NODE_HANDLE ele);
+AST_NODE_HANDLE	IOC_CreateFunctionDeclaration(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN name, AST_NODE_HANDLE param, AST_NODE_HANDLE body);
+AST_NODE_HANDLE IOC_CreateFunctionExpression(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN name, AST_NODE_HANDLE param, AST_NODE_HANDLE body);
+AST_NODE_HANDLE IOC_CreateFormalParameterList(ioc_src_info *srcInfo);
+AST_NODE_HANDLE IOC_AppendFormalParameterList(ioc_src_info *srcInfo,AST_NODE_HANDLE self, pANTLR3_COMMON_TOKEN token);
+AST_NODE_HANDLE IOC_CreateVariableDeclarationList(ioc_src_info *srcInfo);
+AST_NODE_HANDLE IOC_AppendVariableDeclarationList(AST_NODE_HANDLE self, AST_NODE_HANDLE variableDeclaration);
+AST_NODE_HANDLE IOC_CreateVariableDeclaration_WithVar(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE e);
+AST_NODE_HANDLE	IOC_CreateVariableProxy_WithVar(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN identifier);
+AST_NODE_HANDLE IOC_CreateEmptyStatement(ioc_src_info *srcInfo,pANTLR3_COMMON_TOKEN token);
+AST_NODE_HANDLE IOC_CreateIfStatement(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN ifToken, AST_NODE_HANDLE e, AST_NODE_HANDLE s1, AST_NODE_HANDLE s2);
+
+
 AST_NODE_HANDLE IOC_CreateCaseBlock(int location[]);
 
-AST_NODE_HANDLE	IOC_CreateFunctionDeclaration(int location[], pANTLR3_COMMON_TOKEN name, AST_NODE_HANDLE param, AST_NODE_HANDLE body);
-AST_NODE_HANDLE IOC_CreateFunctionExpression(int location[], pANTLR3_COMMON_TOKEN name, AST_NODE_HANDLE param, AST_NODE_HANDLE body);
 AST_NODE_HANDLE IOC_SetjsFuncExpression(AST_NODE_HANDLE srcEle, const char*);
 
-AST_NODE_HANDLE IOC_CreateFormalParameterList(int location[]);
-AST_NODE_HANDLE IOC_AppendFormalParameterList(AST_NODE_HANDLE self, pANTLR3_COMMON_TOKEN token);
-AST_NODE_HANDLE IOC_CreateVariableDeclarationList(int location[]);
-AST_NODE_HANDLE IOC_AppendVariableDeclarationList(AST_NODE_HANDLE self, AST_NODE_HANDLE variableDeclaration);
-AST_NODE_HANDLE IOC_CreateVariableDeclaration_WithVar(int location[], pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE e);
-AST_NODE_HANDLE IOC_CreateEmptyStatement(int location[], pANTLR3_COMMON_TOKEN token);
-AST_NODE_HANDLE IOC_CreateIfStatement(int location[], pANTLR3_COMMON_TOKEN ifToken, AST_NODE_HANDLE e, AST_NODE_HANDLE s1, AST_NODE_HANDLE s2);
 AST_NODE_HANDLE IOC_CreateDoWhileStatement(int location[], pANTLR3_COMMON_TOKEN doToken, AST_NODE_HANDLE s, pANTLR3_COMMON_TOKEN whileToken, AST_NODE_HANDLE e);
 AST_NODE_HANDLE IOC_CreateWhileStatement(int location[], pANTLR3_COMMON_TOKEN whileToken, AST_NODE_HANDLE e, AST_NODE_HANDLE s);
 AST_NODE_HANDLE IOC_CreateForStatement(int location[], pANTLR3_COMMON_TOKEN forToken, AST_NODE_HANDLE i, AST_NODE_HANDLE e1, AST_NODE_HANDLE e2, AST_NODE_HANDLE s);
@@ -85,7 +107,6 @@ AST_NODE_HANDLE IOC_AppendArguments(AST_NODE_HANDLE self, AST_NODE_HANDLE e);
 AST_NODE_HANDLE IOC_CreateIndexSuffix(int location[], AST_NODE_HANDLE e);
 AST_NODE_HANDLE IOC_CreatePropertyReferenceSuffix(int location[], pANTLR3_COMMON_TOKEN token);
 
-AST_NODE_HANDLE	IOC_CreateVariableProxy_WithVar(int location[], pANTLR3_COMMON_TOKEN identifier);
 AST_NODE_HANDLE	IOC_CreateVariableProxy(int location[], pANTLR3_COMMON_TOKEN identifier);
 
 

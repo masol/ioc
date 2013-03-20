@@ -2139,7 +2139,7 @@ class Expression;
 		typedef	Expression inherit;
 		AST_DECLARE_REQUIRED_HEADER(VariableProxy)
 	public:
-		VariableProxy()
+		VariableProxy() : m_is_declaration(false)
 		{
 		}
 		/**
@@ -2150,6 +2150,12 @@ class Expression;
 		inline const std::string& js_identifier(void) const { return m_js_identifier; }
 		///@brief Set the name string of variable.
 		inline void js_identifier(const std::string &i) { m_js_identifier = i; }
+		
+		///@brief Check if this node is a declaration.
+		inline bool isDeclaration(void) const { return m_is_declaration; }
+		///@brief Set this node as a declaration.
+		inline void isDeclaration(bool b) { m_is_declaration = b; }
+		
 	protected:
 		virtual	void	assignFrom(const AstNode* psrc)
 		{
@@ -2166,6 +2172,8 @@ class Expression;
 		 **/
 		/// @brief name string of variable
 		std::string m_js_identifier;
+		/// @brief 只有当变量声明时为true。如：jsval a;/javal b = 1;
+		bool m_is_declaration;
 	};
 
 	/**
@@ -2446,6 +2454,7 @@ class Expression;
 	 **/
 	class FunctionExpression : public Statement
 	{
+		typedef	Statement	inherit;
 		AST_DECLARE_REQUIRED_HEADER(FunctionExpression)
 	public:
 		FunctionExpression() : 
@@ -2476,10 +2485,26 @@ class Expression;
 		inline	void	body(AstNode* b){
 			m_body = b;
 		}
+		
+		///@brief get the function name string.
+		inline const std::string& name(void) const { return m_name; }
+		///@brief set the name of function.
+		inline void name(const std::string &str) { m_name = str; }
+	protected:
+		virtual	void	assignFrom(const AstNode* psrc)
+		{
+			const FunctionExpression*	pFunctionExpression = psrc->AsFunctionExpression();
+			if(pFunctionExpression)
+			{
+				this->m_name = pFunctionExpression->m_name;
+			}
+			inherit::assignFrom(psrc);
+		}
 	private:
 		/// @brief a function-expression may have no name(identifier).
 		AstNode	*m_param;
 		AstNode	*m_body;
+		std::string m_name;
 	};
 
 	/**
