@@ -40,7 +40,6 @@
 	V(WhileStatement)                             \
 	V(ForStatement)                               \
 	V(ForInStatement)                             \
-	V(ForEachStatement)                           \
 	V(TryStatement)                               \
 	V(TryCatchStatement)                          \
 	V(TryFinallyStatement)                        \
@@ -59,29 +58,22 @@
 	V(VariableDeclarationList)                    \
 	V(FormalParameterList)                        \
 	V(VariableProxy)                              \
-	V(CharacterLiteral) 	                          \
 	V(StringLiteral)                              \
 	V(NumberLiteral)                              \
-	V(IntNumberLiteral)                           \
-	V(DoubleNumberLiteral)                        \
 	V(BooleanLiteral)                             \
 	V(NullLiteral)                                \
 	V(ObjectLiteral)                              \
 	V(ArrayLiteral)                               \
 	V(PropertyNameAndValue)                       \
 	V(NewExpression)                              \
-	V(MemberExpression)                           \
 	V(Arguments)                                  \
 	V(IndexSuffix)                                \
 	V(PropertyReferenceSuffix)                    \
-	V(PropertyAccessor)                           \
 	V(MultiPropertyAccessor)                      \
 	V(Call)                                       \
 	V(Conditional)                                \
 	V(Throw)                                      \
-	V(CompareOperation)                           \
-	V(Map)                                        
-
+	V(CompareOperation)                         
 		
 #define AST_NODE_LIST(V)                          \
 	STATEMENT_NODE_LIST(V)                        \

@@ -74,67 +74,47 @@ AST_NODE_HANDLE IOC_CreateVariableDeclaration_WithVar(ioc_src_info *srcInfo, pAN
 AST_NODE_HANDLE	IOC_CreateVariableProxy_WithVar(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN identifier);
 AST_NODE_HANDLE IOC_CreateEmptyStatement(ioc_src_info *srcInfo,pANTLR3_COMMON_TOKEN token);
 AST_NODE_HANDLE IOC_CreateIfStatement(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN ifToken, AST_NODE_HANDLE e, AST_NODE_HANDLE s1, AST_NODE_HANDLE s2);
-
-
-AST_NODE_HANDLE IOC_CreateCaseBlock(int location[]);
-
-AST_NODE_HANDLE IOC_SetjsFuncExpression(AST_NODE_HANDLE srcEle, const char*);
-
-AST_NODE_HANDLE IOC_CreateDoWhileStatement(int location[], pANTLR3_COMMON_TOKEN doToken, AST_NODE_HANDLE s, pANTLR3_COMMON_TOKEN whileToken, AST_NODE_HANDLE e);
-AST_NODE_HANDLE IOC_CreateWhileStatement(int location[], pANTLR3_COMMON_TOKEN whileToken, AST_NODE_HANDLE e, AST_NODE_HANDLE s);
-AST_NODE_HANDLE IOC_CreateForStatement(int location[], pANTLR3_COMMON_TOKEN forToken, AST_NODE_HANDLE i, AST_NODE_HANDLE e1, AST_NODE_HANDLE e2, AST_NODE_HANDLE s);
-AST_NODE_HANDLE IOC_CreateForInStatement(int location[], pANTLR3_COMMON_TOKEN forToken, AST_NODE_HANDLE i, pANTLR3_COMMON_TOKEN inToken, AST_NODE_HANDLE e, AST_NODE_HANDLE s);
-AST_NODE_HANDLE IOC_CreateContinueStatement(int location[], pANTLR3_COMMON_TOKEN token, pANTLR3_COMMON_TOKEN i);
-AST_NODE_HANDLE IOC_CreateBreakStatement(int location[], pANTLR3_COMMON_TOKEN token, pANTLR3_COMMON_TOKEN i);
-AST_NODE_HANDLE IOC_CreateReturnStatement(int location[], pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE e);
-AST_NODE_HANDLE IOC_CreateWithStatement(int location[], pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE e, AST_NODE_HANDLE s);
-AST_NODE_HANDLE IOC_CreateLabelledStatement(int location[], pANTLR3_COMMON_TOKEN i, AST_NODE_HANDLE s);
-AST_NODE_HANDLE IOC_CreateSwitchStatement(int location[], pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE e, AST_NODE_HANDLE b);
-AST_NODE_HANDLE IOC_CreateCaseBlock(int location[]);
+AST_NODE_HANDLE IOC_CreateDoWhileStatement(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN doToken, AST_NODE_HANDLE s, pANTLR3_COMMON_TOKEN whileToken, AST_NODE_HANDLE e);
+AST_NODE_HANDLE IOC_CreateWhileStatement(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN whileToken, AST_NODE_HANDLE e, AST_NODE_HANDLE s);
+AST_NODE_HANDLE IOC_CreateForStatement(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN forToken, AST_NODE_HANDLE i, AST_NODE_HANDLE e1, AST_NODE_HANDLE e2, AST_NODE_HANDLE s);
+AST_NODE_HANDLE IOC_CreateForInStatement(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN forToken, AST_NODE_HANDLE i, pANTLR3_COMMON_TOKEN inToken, AST_NODE_HANDLE e, AST_NODE_HANDLE s);
+AST_NODE_HANDLE IOC_CreateContinueStatement(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN token, pANTLR3_COMMON_TOKEN i);
+AST_NODE_HANDLE IOC_CreateBreakStatement(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN token, pANTLR3_COMMON_TOKEN i);
+AST_NODE_HANDLE IOC_CreateReturnStatement(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE e);
+AST_NODE_HANDLE IOC_CreateWithStatement(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE e, AST_NODE_HANDLE s);
+AST_NODE_HANDLE IOC_CreateLabelledStatement(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN i, AST_NODE_HANDLE s);
+AST_NODE_HANDLE IOC_CreateSwitchStatement(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE e, AST_NODE_HANDLE b);
+AST_NODE_HANDLE IOC_CreateCaseBlock(ioc_src_info *srcInfo);
 AST_NODE_HANDLE IOC_AppendCaseBlock(AST_NODE_HANDLE self, AST_NODE_HANDLE e);
-AST_NODE_HANDLE IOC_CreateCaseClause(int location[], pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE e, AST_NODE_HANDLE s);
-AST_NODE_HANDLE IOC_CreateDefaultClause(int location[], pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE s);
-AST_NODE_HANDLE IOC_CreateThrow(int location[], pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE e);
-AST_NODE_HANDLE IOC_CreateTryStatement(int location[], pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE s, AST_NODE_HANDLE c, AST_NODE_HANDLE f);
-AST_NODE_HANDLE IOC_CreateTryCatchStatement(int location[], pANTLR3_COMMON_TOKEN token, pANTLR3_COMMON_TOKEN i, AST_NODE_HANDLE s);
-AST_NODE_HANDLE IOC_CreateTryFinallyStatement(int location[], pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE s);
-AST_NODE_HANDLE IOC_CreateAssignment(int location[], pANTLR3_COMMON_TOKEN op, AST_NODE_HANDLE left, AST_NODE_HANDLE right);
-AST_NODE_HANDLE IOC_CreateNewExpression(int location[], pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE e);
-AST_NODE_HANDLE IOC_CreateMemberExpression(int location[], char * newSrc, char * memberSrc, char * argumentsSrc, pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE m, AST_NODE_HANDLE a);
-AST_NODE_HANDLE IOC_CreateCall(int location[], AST_NODE_HANDLE m, AST_NODE_HANDLE a);
-AST_NODE_HANDLE IOC_CreateArguments(int location[]);
-AST_NODE_HANDLE IOC_AppendArguments(AST_NODE_HANDLE self, AST_NODE_HANDLE e);
-AST_NODE_HANDLE IOC_CreateIndexSuffix(int location[], AST_NODE_HANDLE e);
-AST_NODE_HANDLE IOC_CreatePropertyReferenceSuffix(int location[], pANTLR3_COMMON_TOKEN token);
-
-AST_NODE_HANDLE	IOC_CreateVariableProxy(int location[], pANTLR3_COMMON_TOKEN identifier);
-
-
-/**
- * @brief `conditional` parser rule in grammar.
- * @details Example NULL
- **/
-AST_NODE_HANDLE IOC_CreateConditional(int location[],pANTLR3_COMMON_TOKEN token1,pANTLR3_COMMON_TOKEN token2,AST_NODE_HANDLE e,AST_NODE_HANDLE e1,AST_NODE_HANDLE e2);
-
-AST_NODE_HANDLE	IOC_CreateBinaryOperation(int location[], pANTLR3_COMMON_TOKEN operatorToken, AST_NODE_HANDLE left, AST_NODE_HANDLE right);
-AST_NODE_HANDLE IOC_CreateCompareOperation(int location[], pANTLR3_COMMON_TOKEN operatorToken, AST_NODE_HANDLE left, AST_NODE_HANDLE right);
-AST_NODE_HANDLE IOC_CreateUnaryOperation(int location[], pANTLR3_COMMON_TOKEN token, ANTLR3_BOOLEAN isFrontOp, AST_NODE_HANDLE e);
-AST_NODE_HANDLE IOC_CreateObjectLiteral(int location[]);
-AST_NODE_HANDLE IOC_AppendObjectLiteral(AST_NODE_HANDLE self, AST_NODE_HANDLE e);
-AST_NODE_HANDLE IOC_CreateArrayLiteral(int location[]);
-AST_NODE_HANDLE IOC_AppendArrayLiteral(AST_NODE_HANDLE self, AST_NODE_HANDLE e);
-AST_NODE_HANDLE IOC_CreatePropertyNameAndValue(int location[], AST_NODE_HANDLE p, AST_NODE_HANDLE e);
-AST_NODE_HANDLE IOC_CreateMultiPropertyAccessor(int location[]);
+AST_NODE_HANDLE IOC_CreateCaseClause(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE e, AST_NODE_HANDLE s);
+AST_NODE_HANDLE IOC_CreateDefaultClause(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE s);
+AST_NODE_HANDLE IOC_CreateThrow(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE e);
+AST_NODE_HANDLE IOC_CreateTryStatement(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE s, AST_NODE_HANDLE c, AST_NODE_HANDLE f);
+AST_NODE_HANDLE IOC_CreateTryCatchStatement(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN token, pANTLR3_COMMON_TOKEN i, AST_NODE_HANDLE s);
+AST_NODE_HANDLE IOC_CreateTryFinallyStatement(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE s);
+AST_NODE_HANDLE	IOC_CreateBinaryOperation(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN operatorToken, AST_NODE_HANDLE left, AST_NODE_HANDLE right);
+AST_NODE_HANDLE IOC_CreateAssignment(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN op, AST_NODE_HANDLE left, AST_NODE_HANDLE right);
+AST_NODE_HANDLE IOC_CreateNewExpression(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN token, AST_NODE_HANDLE e,AST_NODE_HANDLE arg);
+AST_NODE_HANDLE IOC_CreateMultiPropertyAccessor(ioc_src_info *srcInfo);
 AST_NODE_HANDLE IOC_AppendMultiPropertyAccessor(AST_NODE_HANDLE self, AST_NODE_HANDLE e);
-AST_NODE_HANDLE IOC_AppendMultiPropertyAccessor2(AST_NODE_HANDLE self, AST_NODE_HANDLE e, AST_NODE_HANDLE arg);
-AST_NODE_HANDLE	IOC_CreateStringLiteral(int location[], pANTLR3_COMMON_TOKEN str);
-AST_NODE_HANDLE	IOC_CreateNumberLiteral(int location[], pANTLR3_COMMON_TOKEN num);
-AST_NODE_HANDLE IOC_CreateBooleanLiteral(int location[], pANTLR3_COMMON_TOKEN str);
-AST_NODE_HANDLE IOC_CreateNullLiteral(int location[], pANTLR3_COMMON_TOKEN str);
-
-AST_NODE_HANDLE IOC_CreateMap(int location[], char* i, AST_NODE_HANDLE e);
-//xxdebug
-int IOC_IsVariableProxy(AST_NODE_HANDLE e);
+AST_NODE_HANDLE IOC_CreateCall(ioc_src_info *srcInfo, AST_NODE_HANDLE m, AST_NODE_HANDLE a);
+AST_NODE_HANDLE IOC_CreateArguments(ioc_src_info *srcInfo);
+AST_NODE_HANDLE IOC_AppendArguments(AST_NODE_HANDLE self, AST_NODE_HANDLE e);
+AST_NODE_HANDLE IOC_CreateIndexSuffix(ioc_src_info *srcInfo, AST_NODE_HANDLE e);
+AST_NODE_HANDLE IOC_CreatePropertyReferenceSuffix(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN token);
+AST_NODE_HANDLE IOC_CreateConditional(ioc_src_info *srcInfo,AST_NODE_HANDLE e,AST_NODE_HANDLE e1,AST_NODE_HANDLE e2);
+AST_NODE_HANDLE IOC_CreateCompareOperation(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN operatorToken, AST_NODE_HANDLE left, AST_NODE_HANDLE right);
+AST_NODE_HANDLE IOC_CreateUnaryOperation(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN token, ANTLR3_BOOLEAN isFrontOp, AST_NODE_HANDLE e);
+AST_NODE_HANDLE	IOC_CreateVariableProxy(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN identifier);
+AST_NODE_HANDLE IOC_CreateArrayLiteral(ioc_src_info *srcInfo);
+AST_NODE_HANDLE IOC_AppendArrayLiteral(AST_NODE_HANDLE self, AST_NODE_HANDLE e);
+AST_NODE_HANDLE IOC_CreateObjectLiteral(ioc_src_info *srcInfo);
+AST_NODE_HANDLE IOC_AppendObjectLiteral(AST_NODE_HANDLE self, AST_NODE_HANDLE e);
+AST_NODE_HANDLE IOC_CreatePropertyNameAndValue(ioc_src_info *srcInfo, AST_NODE_HANDLE p, AST_NODE_HANDLE e);
+AST_NODE_HANDLE	IOC_CreateStringLiteral(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN str);
+AST_NODE_HANDLE	IOC_CreateNumberLiteral(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN num);
+AST_NODE_HANDLE IOC_CreateNullLiteral(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN str);
+AST_NODE_HANDLE IOC_CreateBooleanLiteral(ioc_src_info *srcInfo, pANTLR3_COMMON_TOKEN str);
 
 #ifdef __cplusplus
 }

@@ -21,6 +21,7 @@
 #include "frontend/ast.h"
 #include "frontend/antlrhelper.h"
 #include "frontend/astfactory.h"
+#include "utils/log.h"
 #include <string>
 
 #ifdef __cplusplus
@@ -340,6 +341,1015 @@ AST_NODE_HANDLE IOC_CreateIfStatement(
 	return GetAstHandle(pIfStatement);
 }
 
+/**
+ * @brief `doWhileStatement` parser rule in grammar.
+ * @example "do{b=1}while(a==1)"
+ **/
+AST_NODE_HANDLE IOC_CreateDoWhileStatement(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN doToken,
+	AST_NODE_HANDLE s,
+	pANTLR3_COMMON_TOKEN whileToken,
+	AST_NODE_HANDLE e
+)
+{
+	ioc::DoWhileStatement* pDoWhileStatement = 
+		(ioc::DoWhileStatement*)ioc::AstFactory::createAstNode(IocAst_kDoWhileStatement);
+	AsignSrcinfoToNode(pDoWhileStatement,srcInfo);
+
+	pDoWhileStatement->body(GetAstNode(s));
+	pDoWhileStatement->condition(GetAstNode(e));
+
+	return GetAstHandle(pDoWhileStatement);
+}
+
+
+/**
+ * @brief `whileStatement` parser rule in grammar.
+ * @example "while(a==1){b=1}"
+ **/
+AST_NODE_HANDLE IOC_CreateWhileStatement(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN whileToken,
+	AST_NODE_HANDLE e,
+	AST_NODE_HANDLE s
+) {
+	ioc::WhileStatement* pWhileStatement = 
+		(ioc::WhileStatement*)ioc::AstFactory::createAstNode(IocAst_kWhileStatement);
+	AsignSrcinfoToNode(pWhileStatement,srcInfo);
+
+	pWhileStatement->condition(GetAstNode(e));
+	pWhileStatement->body(GetAstNode(s));
+
+	return GetAstHandle(pWhileStatement);
+}
+
+/**
+ * @brief `forStatement` parser rule in grammar.
+ * @example "for(i=0;i<10;i++){echo i}"
+ **/
+AST_NODE_HANDLE IOC_CreateForStatement(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN forToken,
+	AST_NODE_HANDLE i,
+	AST_NODE_HANDLE e1,
+	AST_NODE_HANDLE e2,
+	AST_NODE_HANDLE s
+) {
+	ioc::ForStatement* pForStatement = 
+		(ioc::ForStatement*)ioc::AstFactory::createAstNode(IocAst_kForStatement);
+	AsignSrcinfoToNode(pForStatement,srcInfo);
+
+	pForStatement->init(GetAstNode(i));
+	pForStatement->condition(GetAstNode(e1));
+	pForStatement->next(GetAstNode(e2));
+	pForStatement->body(GetAstNode(s));
+
+	return GetAstHandle(pForStatement);
+}
+
+
+/**
+ * @brief `forInStatement` parser rule in grammar.
+ * @example "for(i in arr){echo arr[i]}"
+ **/
+AST_NODE_HANDLE IOC_CreateForInStatement(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN forToken,
+	AST_NODE_HANDLE i,
+	pANTLR3_COMMON_TOKEN inToken,
+	AST_NODE_HANDLE e,
+	AST_NODE_HANDLE s
+) {
+	ioc::ForInStatement* pForInStatement =
+		(ioc::ForInStatement*)ioc::AstFactory::createAstNode(IocAst_kForInStatement);
+	AsignSrcinfoToNode(pForInStatement,srcInfo);
+
+	pForInStatement->init(GetAstNode(i));
+	pForInStatement->enumerable(GetAstNode(e));
+	pForInStatement->body(GetAstNode(s));
+	
+	return GetAstHandle(pForInStatement);
+}
+
+
+/**
+ * @brief `continueStatement` parser rule in grammar.
+ * @example "continue i;"
+ **/
+AST_NODE_HANDLE IOC_CreateContinueStatement(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN token,
+	pANTLR3_COMMON_TOKEN i
+) {
+	// Create parent node.
+	ioc::ContinueStatement* pContinueStatement =
+		(ioc::ContinueStatement*)ioc::AstFactory::createAstNode(IocAst_kContinueStatement);
+	AsignSrcinfoToNode(pContinueStatement,srcInfo);
+
+	if(i){
+		// The label name.
+		pANTLR3_STRING antlr_string = i->getText(i);
+		char* ioc_char = (char*)antlr_string->chars;
+		pContinueStatement->identifier(ioc_char);
+	}
+
+	return GetAstHandle(pContinueStatement);
+}
+
+
+/**
+ * @brief `breakStatement` parser rule in grammar.
+ * @example "break i;" OR "break;"
+ **/
+AST_NODE_HANDLE IOC_CreateBreakStatement(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN token,
+	pANTLR3_COMMON_TOKEN i
+)
+{
+	// Create parent node.
+	ioc::BreakStatement* pBreakStatement =
+		(ioc::BreakStatement*)ioc::AstFactory::createAstNode(IocAst_kBreakStatement);
+	AsignSrcinfoToNode(pBreakStatement,srcInfo);
+
+	if(i) {
+		// The label name.
+		pANTLR3_STRING antlr_string = i->getText(i);
+		const char* ioc_char = (char*)antlr_string->chars;
+		pBreakStatement->identifier(ioc_char);
+	}
+	return GetAstHandle(pBreakStatement);
+}
+
+
+/**
+ * @brief `returnStatement` parser rule in grammar.
+ * @example "return i=1;" OR "return ;"
+ **/
+AST_NODE_HANDLE IOC_CreateReturnStatement(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN token,
+	AST_NODE_HANDLE e
+) {
+	ioc::ReturnStatement* pReturnStatement =
+		(ioc::ReturnStatement*)ioc::AstFactory::createAstNode(IocAst_kReturnStatement);
+	AsignSrcinfoToNode(pReturnStatement,srcInfo);
+
+	if(e) {
+		pReturnStatement->expression(GetAstNode(e));
+	}
+	
+	return GetAstHandle(pReturnStatement);
+}
+
+
+/**
+ * @brief `withStatement` parser rule in grammar.
+ * @example NULL
+ **/
+AST_NODE_HANDLE IOC_CreateWithStatement(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN token,
+	AST_NODE_HANDLE e,
+	AST_NODE_HANDLE s
+)
+{
+	ioc::WithStatement* pWithStatement =
+		(ioc::WithStatement*)ioc::AstFactory::createAstNode(IocAst_kWithStatement);
+	AsignSrcinfoToNode(pWithStatement,srcInfo);
+
+	pWithStatement->expression(GetAstNode(e));
+	pWithStatement->statement(GetAstNode(s));
+	
+	return GetAstHandle(pWithStatement);
+}
+
+
+/**
+ * @brief A label statement in Javascript.
+ * @example "label:i=1" OR "label:if(){}"
+ **/
+AST_NODE_HANDLE IOC_CreateLabelledStatement(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN i,
+	AST_NODE_HANDLE s
+)
+{
+	// The label name.
+	pANTLR3_STRING antlr_string = i->getText(i);
+	const char* ioc_char = (char*)antlr_string->chars;
+
+	// Create label statement node.
+	ioc::LabelledStatement* pLabelledStatement =
+		(ioc::LabelledStatement*)ioc::AstFactory::createAstNode(IocAst_kLabelledStatement);
+	
+	// position of this label statement in source code.
+	AsignSrcinfoToNode(pLabelledStatement,srcInfo);
+
+	// Store label name as a member variable.
+	pLabelledStatement->identifier(ioc_char);
+	// Set his child, a statement.
+	pLabelledStatement->statement(GetAstNode(s));
+	
+	return GetAstHandle(pLabelledStatement);
+}
+
+
+/**
+ * @brief `switchStatement` parser rule in grammar.
+ * @example "switch(c){case 1: a=1;break; case 2: b=2;break;}"
+ **/
+AST_NODE_HANDLE IOC_CreateSwitchStatement(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN token,
+	AST_NODE_HANDLE e,
+	AST_NODE_HANDLE b
+)
+{
+	ioc::SwitchStatement* pSwitchStatement =
+		(ioc::SwitchStatement*)ioc::AstFactory::createAstNode(IocAst_kSwitchStatement);
+	AsignSrcinfoToNode(pSwitchStatement,srcInfo);
+
+	pSwitchStatement->expression(GetAstNode(e));
+	pSwitchStatement->caseBlock(GetAstNode(b));
+	
+	return GetAstHandle(pSwitchStatement);
+}
+
+
+/**
+ * @brief `caseBlock` parser rule in grammar.
+ * @example "case 1: a=1;break; case 2: b=2;break; default: c=3;break;" in "switch(c){case 1: a=1;break; case 2: b=2;break; default: c=3;break;}"
+ **/
+AST_NODE_HANDLE IOC_CreateCaseBlock(
+	ioc_src_info *srcInfo
+) {
+	ioc::CaseBlock* pCaseBlock = 
+		(ioc::CaseBlock*)ioc::AstFactory::createAstNode(IocAst_kCaseBlock);
+	AsignSrcinfoToNode(pCaseBlock,srcInfo);
+	
+	return GetAstHandle(pCaseBlock);
+}
+
+
+/**
+ * @brief `caseBlock` parser rule in grammar.
+ * @example "case 1: a=1;break; case 2: b=2;break; default: c=3;break;" in "switch(c){case 1: a=1;break; case 2: b=2;break; default: c=3;break;}"
+ **/
+AST_NODE_HANDLE IOC_AppendCaseBlock(
+	AST_NODE_HANDLE self,
+	AST_NODE_HANDLE c
+) {
+	ioc::CaseBlock* pContainer = GetAstNode(self)->AsCaseBlock();
+	if(pContainer)
+	{
+		pContainer->push_back(GetAstNode(c));
+		return self;
+	}
+	return NULL;
+}
+
+
+
+/**
+ * @brief `caseClause` parser rule in grammar.
+ * @example "case 1: a=1;break;" in "case 1: a=1;break; case 2: b=2;break; default: c=3;break;"
+ **/
+AST_NODE_HANDLE IOC_CreateCaseClause(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN token,
+	AST_NODE_HANDLE e,
+	AST_NODE_HANDLE s
+) {
+	ioc::CaseClause* pCaseClause =
+		(ioc::CaseClause*)ioc::AstFactory::createAstNode(IocAst_kCaseClause);
+	AsignSrcinfoToNode(pCaseClause,srcInfo);
+
+	pCaseClause->expression(GetAstNode(e));
+	pCaseClause->statement(GetAstNode(s));
+	
+	return GetAstHandle(pCaseClause);
+}
+
+
+/**
+ * @brief `defaultClause` parser rule in grammar.
+ * @example "default: c=3;break;" in "case 1: a=1;break; case 2: b=2;break; default: c=3;break;"
+ **/
+AST_NODE_HANDLE IOC_CreateDefaultClause(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN token,
+	AST_NODE_HANDLE s
+) {
+	ioc::DefaultClause* pDefaultClause =
+		(ioc::DefaultClause*)ioc::AstFactory::createAstNode(IocAst_kDefaultClause);
+	AsignSrcinfoToNode(pDefaultClause,srcInfo);
+
+	pDefaultClause->statement(GetAstNode(s));
+	
+	return GetAstHandle(pDefaultClause);
+}
+
+
+/**
+ * @brief `throwStatement` parser rule in grammar.
+ * @example "throw a=1;"
+ **/
+AST_NODE_HANDLE IOC_CreateThrow(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN token,
+	AST_NODE_HANDLE e
+) {
+	ioc::Throw* pThrow =
+		(ioc::Throw*)ioc::AstFactory::createAstNode(IocAst_kThrow);
+	AsignSrcinfoToNode(pThrow,srcInfo);
+
+	pThrow->expression(GetAstNode(e));
+	
+	return GetAstHandle(pThrow);
+}
+
+
+/**
+ * @brief `tryStatement` parser rule in grammar.
+ * @example "try{...}catch(err){...}finally{...}"
+ **/
+AST_NODE_HANDLE IOC_CreateTryStatement(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN token,
+	AST_NODE_HANDLE s,
+	AST_NODE_HANDLE c,
+	AST_NODE_HANDLE f
+) {
+	ioc::TryStatement* pTryStatement =
+		(ioc::TryStatement*)ioc::AstFactory::createAstNode(IocAst_kTryStatement);
+	AsignSrcinfoToNode(pTryStatement,srcInfo);
+
+	pTryStatement->statement(GetAstNode(s));
+	pTryStatement->catchClause(GetAstNode(c));
+	pTryStatement->finallyClause(GetAstNode(f));
+	
+	return GetAstHandle(pTryStatement);
+}
+
+
+/**
+ * @brief `catchClause` parser rule in grammar.
+ * @example "catch{...}" in "try{...}catch(err){...}finally{...}"
+ **/
+AST_NODE_HANDLE IOC_CreateTryCatchStatement(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN token,
+	pANTLR3_COMMON_TOKEN i,
+	AST_NODE_HANDLE s
+) {
+	// Create parent node.
+	ioc::TryCatchStatement* pTryCatchStatement =
+		(ioc::TryCatchStatement*)ioc::AstFactory::createAstNode(IocAst_kTryCatchStatement);
+	AsignSrcinfoToNode(pTryCatchStatement,srcInfo);
+
+	// Create a child containing Identifier.
+	ioc::VariableProxy* pVariableProxy =
+		(ioc::VariableProxy*)ioc::AstFactory::createAstNode(IocAst_kVariableProxy);
+	//@FIXME : we need assign source info from i token here.
+	AsignSrcinfoToNode(pVariableProxy,srcInfo);
+
+	pANTLR3_STRING str = i->getText(i);
+	pVariableProxy->js_identifier((char*)str->chars);
+
+	pTryCatchStatement->init(GetAstNode(pVariableProxy));
+	pTryCatchStatement->statement(GetAstNode(s));
+	
+	return GetAstHandle(pTryCatchStatement);
+}
+
+
+/**
+ * @brief `finallyClause` parser rule in grammar.
+ * @example "finally{...}" in "try{...}catch(err){...}finally{...}"
+ **/
+AST_NODE_HANDLE IOC_CreateTryFinallyStatement(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN token,
+	AST_NODE_HANDLE s
+) {
+	ioc::TryFinallyStatement* pTryFinallyStatement =
+		(ioc::TryFinallyStatement*)ioc::AstFactory::createAstNode(IocAst_kTryFinallyStatement);
+	AsignSrcinfoToNode(pTryFinallyStatement,srcInfo);
+
+	pTryFinallyStatement->statement(GetAstNode(s));
+	
+	return GetAstHandle(pTryFinallyStatement);
+}
+
+
+AST_NODE_HANDLE IOC_CreateBinaryOperation(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN operatorToken,
+	AST_NODE_HANDLE left,
+	AST_NODE_HANDLE right
+) {
+	ioc::BinaryOperation* pOperation = 
+		(ioc::BinaryOperation*)ioc::AstFactory::createAstNode(IocAst_kBinaryOperation);
+	AsignSrcinfoToNode(pOperation,srcInfo);
+
+	pOperation->left(GetAstNode(left));
+	pOperation->right(GetAstNode(right));
+
+	pANTLR3_STRING str = operatorToken->getText(operatorToken);
+	if(str && str->len){
+		const char* ioc_operation = (char*)(str->chars);
+		pOperation->opName(ioc_operation);
+		// Binary operator.
+		if(STREQ(ioc_operation, "+")) {
+			pOperation->operater(ioc::BinaryOperation::T_ADD);
+		}
+		else if(STREQ(ioc_operation, "-")) {
+			pOperation->operater(ioc::BinaryOperation::T_SUB);
+		}
+		else if(STREQ(ioc_operation, "*")) {
+			pOperation->operater(ioc::BinaryOperation::T_MUL);
+		}
+		else if(STREQ(ioc_operation, "/")) {
+			pOperation->operater(ioc::BinaryOperation::T_DIV);
+		}
+		else if(STREQ(ioc_operation, "%")) {
+			pOperation->operater(ioc::BinaryOperation::T_MOD);
+		}
+		else if(STREQ(ioc_operation, "|")) {
+			pOperation->operater(ioc::BinaryOperation::T_BIT_OR);
+		}
+		else if(STREQ(ioc_operation, "^")) {
+			pOperation->operater(ioc::BinaryOperation::T_BIT_XOR);
+		}
+		else if(STREQ(ioc_operation, "&")) {
+			pOperation->operater(ioc::BinaryOperation::T_BIT_AND);
+		}
+		else if(STREQ(ioc_operation, "||")) {
+			pOperation->operater(ioc::BinaryOperation::T_OR);
+		}
+		else if(STREQ(ioc_operation, "&&")) {
+			pOperation->operater(ioc::BinaryOperation::T_AND);
+		}
+		else if(STREQ(ioc_operation, "<<")) {
+			pOperation->operater(ioc::BinaryOperation::T_SHL);
+		}
+		else if(STREQ(ioc_operation, ">>")) {
+			pOperation->operater(ioc::BinaryOperation::T_SHR);
+		}
+		else if(STREQ(ioc_operation, ">>>")) {
+			pOperation->operater(ioc::BinaryOperation::T_SAR);
+		}
+		// Special operator.
+		else if(STREQ(ioc_operation, ",")) {
+			pOperation->operater(ioc::BinaryOperation::T_COMMA);
+		}
+	}
+	return GetAstHandle(pOperation);
+}
+
+
+/**
+ * @brief Initial a variable.
+ * @example "a=1"
+ **/
+AST_NODE_HANDLE IOC_CreateAssignment(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN op,
+	AST_NODE_HANDLE left,
+	AST_NODE_HANDLE right
+)
+{
+	ioc::Assignment* pAssignment = 
+		(ioc::Assignment*)ioc::AstFactory::createAstNode(IocAst_kAssignment);
+	AsignSrcinfoToNode(pAssignment,srcInfo);
+
+	pAssignment->left(GetAstNode(left));
+	pAssignment->right(GetAstNode(right));
+		
+	pANTLR3_STRING str = op->getText(op);
+	if(str && str->len){
+		const char* ioc_operation = (char*)(str->chars);
+		pAssignment->opName(ioc_operation);
+		if(STREQ(ioc_operation, "=")) {
+			pAssignment->operater(ioc::Assignment::T_EQU);
+		}
+		else if(STREQ(ioc_operation, "*=")) {
+			pAssignment->operater(ioc::Assignment::T_MUL);
+		}
+		else if(STREQ(ioc_operation, "/=")) {
+			pAssignment->operater(ioc::Assignment::T_DIV);
+		}
+		else if(STREQ(ioc_operation, "%=")) {
+			pAssignment->operater(ioc::Assignment::T_MOD);
+		}
+		else if(STREQ(ioc_operation, "+=")) {
+			pAssignment->operater(ioc::Assignment::T_ADD);
+		}
+		else if(STREQ(ioc_operation, "-=")) {
+			pAssignment->operater(ioc::Assignment::T_SUB);
+		}
+		else if(STREQ(ioc_operation, "<<=")) {
+			pAssignment->operater(ioc::Assignment::T_SHL);
+		}
+		else if(STREQ(ioc_operation, ">>=")) {
+			pAssignment->operater(ioc::Assignment::T_SHR);
+		}
+		else if(STREQ(ioc_operation, ">>>=")) {
+			pAssignment->operater(ioc::Assignment::T_SHR_ZEROFILL);
+		}
+		else if(STREQ(ioc_operation, "&=")) {
+			pAssignment->operater(ioc::Assignment::T_AND);
+		}
+		else if(STREQ(ioc_operation, "^=")) {
+			pAssignment->operater(ioc::Assignment::T_XOR);
+		}
+		else if(STREQ(ioc_operation, "|=")) {
+			pAssignment->operater(ioc::Assignment::T_OR);
+		}
+	}
+	return GetAstHandle(pAssignment);
+}
+
+/**
+ * @brief `newExpression` parser rule in grammar.
+ * @example "new Object()"
+ **/
+AST_NODE_HANDLE IOC_CreateNewExpression(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN token,
+	AST_NODE_HANDLE e,
+	AST_NODE_HANDLE arg
+) {
+	ioc::NewExpression* pNewExpression =
+		(ioc::NewExpression*)ioc::AstFactory::createAstNode(IocAst_kNewExpression);
+	AsignSrcinfoToNode(pNewExpression,srcInfo);
+
+	pNewExpression->expression(GetAstNode(e));
+	pNewExpression->argument(GetAstNode(arg));
+	
+	return GetAstHandle(pNewExpression);
+}
+
+
+/**
+ * @brief Multi property accessor, split by "."
+ * @example "a.b.c.fn().d.e.f.fn2().g"
+ **/
+AST_NODE_HANDLE IOC_CreateMultiPropertyAccessor(
+	ioc_src_info *srcInfo
+) {
+	ioc::MultiPropertyAccessor* pMultiPropertyAccessor = 
+		(ioc::MultiPropertyAccessor*)ioc::AstFactory::createAstNode(IocAst_kMultiPropertyAccessor);
+	AsignSrcinfoToNode(pMultiPropertyAccessor,srcInfo);
+	
+	return GetAstHandle(pMultiPropertyAccessor);
+}
+
+
+AST_NODE_HANDLE IOC_AppendMultiPropertyAccessor(
+	AST_NODE_HANDLE self,
+	AST_NODE_HANDLE e
+) {
+	ioc::MultiPropertyAccessor* pContainer = GetAstNode(self)->AsMultiPropertyAccessor();
+	if(pContainer)
+	{
+		pContainer->push_back(GetAstNode(e));
+		return self;
+	}
+	return NULL;
+}
+
+/**
+ * @brief `callExpression` parser rule in grammar.
+ * @example "Object()" in "new Object()" OR "fun(a,b,c)"
+ **/
+AST_NODE_HANDLE IOC_CreateCall(
+	ioc_src_info *srcInfo,
+	AST_NODE_HANDLE e,
+	AST_NODE_HANDLE a
+) {
+	ioc::Call* pCall =
+		(ioc::Call*)ioc::AstFactory::createAstNode(IocAst_kCall);
+	AsignSrcinfoToNode(pCall,srcInfo);
+
+	if(ioc::VariableProxy* pVariableProxy = GetAstNode(e)->AsVariableProxy())
+	{
+		// Function name is not expression.
+		pCall->name(pVariableProxy->js_identifier());
+		pCall->expression(NULL);
+	}
+	else
+	{
+		pCall->name("");
+		pCall->expression(GetAstNode(e));
+	}
+
+	pCall->arguments(GetAstNode(a));
+	
+	return GetAstHandle(pCall);
+}
+
+/**
+ * @brief `arguments` parser rule in grammar.
+ * @example "dateString" in "new Date(dateString)"
+ **/
+AST_NODE_HANDLE IOC_CreateArguments(
+	ioc_src_info *srcInfo
+) {
+	ioc::Arguments* pArguments = 
+		(ioc::Arguments*)ioc::AstFactory::createAstNode(IocAst_kArguments);
+	AsignSrcinfoToNode(pArguments,srcInfo);
+
+	return GetAstHandle(pArguments);
+}
+
+/**
+ * @brief `arguments` parser rule in grammar.
+ * @example "dateString" in "new Date(dateString)"
+ **/
+AST_NODE_HANDLE IOC_AppendArguments(
+	AST_NODE_HANDLE self,
+	AST_NODE_HANDLE e
+)
+{
+	ioc::Arguments* pContainer = GetAstNode(self)->AsArguments();
+	if(pContainer)
+	{
+		pContainer->push_back(GetAstNode(e));
+		return self;
+	}
+	return NULL;
+}
+
+
+/**
+ * @brief `indexSuffix` parser rule in grammar.
+ * @example "[i]" in "a[i]"
+ **/
+AST_NODE_HANDLE IOC_CreateIndexSuffix(
+	ioc_src_info *srcInfo,
+	AST_NODE_HANDLE e
+) {
+	ioc::IndexSuffix* pIndexSuffix =
+		(ioc::IndexSuffix*)ioc::AstFactory::createAstNode(IocAst_kIndexSuffix);
+	AsignSrcinfoToNode(pIndexSuffix,srcInfo);
+
+	pIndexSuffix->expression(GetAstNode(e));
+	
+	return GetAstHandle(pIndexSuffix);
+}
+
+
+/**
+ * @brief `propertyReferenceSuffix` parser rule in grammar.
+ * @example ".property" in "Object.property"
+ **/
+AST_NODE_HANDLE IOC_CreatePropertyReferenceSuffix(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN identifier
+)
+{
+	ioc::PropertyReferenceSuffix* pPropertyReferenceSuffix =
+		(ioc::PropertyReferenceSuffix*)ioc::AstFactory::createAstNode(IocAst_kPropertyReferenceSuffix);
+	AsignSrcinfoToNode(pPropertyReferenceSuffix,srcInfo);
+
+	pANTLR3_STRING str = identifier->getText(identifier);
+	pPropertyReferenceSuffix->name((char*)str->chars);
+	
+	return GetAstHandle(pPropertyReferenceSuffix);
+}
+
+AST_NODE_HANDLE IOC_CreateConditional(
+	ioc_src_info *srcInfo,
+	AST_NODE_HANDLE e,
+	AST_NODE_HANDLE e1,
+	AST_NODE_HANDLE e2
+){
+	// Create parent node.
+	ioc::Conditional* pConditional =
+		(ioc::Conditional*)ioc::AstFactory::createAstNode(IocAst_kConditional);
+	AsignSrcinfoToNode(pConditional,srcInfo);
+
+	pConditional->condition(GetAstNode(e));
+	pConditional->valueIfTrue(GetAstNode(e1));
+	pConditional->valueIfFalse(GetAstNode(e2));
+	
+	return GetAstHandle(pConditional);
+}
+
+AST_NODE_HANDLE IOC_CreateCompareOperation(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN operatorToken,
+	AST_NODE_HANDLE left,
+	AST_NODE_HANDLE right
+) {
+	ioc::CompareOperation* pOperation = 
+		(ioc::CompareOperation*)ioc::AstFactory::createAstNode(IocAst_kCompareOperation);
+	AsignSrcinfoToNode(pOperation,srcInfo);
+
+	pOperation->left(GetAstNode(left));
+	pOperation->right(GetAstNode(right));
+	pANTLR3_STRING str = operatorToken->getText(operatorToken);
+	if(str && str->len){
+		char* ioc_operation = (char*)(str->chars);
+		pOperation->opName(ioc_operation);
+		if(STREQ(ioc_operation, "<")) {
+			pOperation->operater(ioc::CompareOperation::T_LT);
+		}
+		else if(STREQ(ioc_operation, ">")) {
+			pOperation->operater(ioc::CompareOperation::T_GT);
+		}
+		else if(STREQ(ioc_operation, "==")) {
+			pOperation->operater(ioc::CompareOperation::T_EQU);
+		}
+		else if(STREQ(ioc_operation, "!=")) {
+			pOperation->operater(ioc::CompareOperation::T_NOTEQU);
+		}
+		else if(STREQ(ioc_operation, "<=")) {
+			pOperation->operater(ioc::CompareOperation::T_LE);
+		}
+		else if(STREQ(ioc_operation, ">=")) {
+			pOperation->operater(ioc::CompareOperation::T_GE);
+		}
+		else if(STREQ(ioc_operation, "===")) {
+			pOperation->operater(ioc::CompareOperation::T_EXEQU);
+		}
+		else if(STREQ(ioc_operation, "!==")) {
+			pOperation->operater(ioc::CompareOperation::T_EXNOTEQU);
+		}
+		else if(STREQ(ioc_operation, "instanceof")) {
+			pOperation->operater(ioc::CompareOperation::T_INSTANCEOF);
+		}
+		else if(STREQ(ioc_operation, "in")) {
+			pOperation->operater(ioc::CompareOperation::T_IN);
+		}
+	}
+	return GetAstHandle(pOperation);
+}
+
+/**
+ * @brief `unaryExpression` and `postfixExpression` parser rule in grammar.
+ * @example "++i" OR "i++"
+ **/
+AST_NODE_HANDLE IOC_CreateUnaryOperation(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN token,
+	ANTLR3_BOOLEAN isFrontOp,
+	AST_NODE_HANDLE e
+) {
+	pANTLR3_STRING antlr_string = token->getText(token);
+	
+	ioc::UnaryOperation* pUnaryOperation = 
+		(ioc::UnaryOperation*)ioc::AstFactory::createAstNode(IocAst_kUnaryOperation);
+	AsignSrcinfoToNode(pUnaryOperation,srcInfo);
+	
+	pUnaryOperation->expression(GetAstNode(e));
+	pUnaryOperation->isFrontOp(isFrontOp == ANTLR3_TRUE);
+	
+	// Save the op name as a string, only for debug.
+	pUnaryOperation->opName((char*)antlr_string->chars);
+	
+	if(antlr_string && antlr_string->len){
+		// Single char op.
+		if(antlr_string->chars[1] == (char)0){
+            switch(antlr_string->chars[0])
+            {
+				// With/without `+`, they are the same. So do nothing
+                case '+':
+                {
+					pUnaryOperation->operater(ioc::UnaryOperation::T_PLUS);
+                }
+                break;
+                case '-':
+                {
+					/**
+					 * "-a" => "0-a"
+					 * "-(a+b)" => "0-(a+b)"
+					 * -1和-1.1直接修改节点。
+					 **/
+					// -1
+					pUnaryOperation->operater(ioc::UnaryOperation::T_MINUS);
+                }
+                break;
+                case '~':
+                {
+                    pUnaryOperation->operater(ioc::UnaryOperation::T_TILDE);
+                }
+                break;
+                case '!':
+                {
+                    pUnaryOperation->operater(ioc::UnaryOperation::T_NOT);
+                }
+                break;
+            }
+			
+		// Double/Multi chars op.
+		}else{
+			if(!antlr_string->compare(antlr_string, "++"))
+			{
+				pUnaryOperation->operater(ioc::UnaryOperation::T_ADDADD);
+			}
+			else if(!antlr_string->compare(antlr_string, "--"))
+			{
+				pUnaryOperation->operater(ioc::UnaryOperation::T_SUBSUB);
+			}
+			else if(!antlr_string->compare(antlr_string, "delete"))
+			{
+				pUnaryOperation->operater(ioc::UnaryOperation::K_DELETE);
+			}
+			else if(!antlr_string->compare(antlr_string, "void"))
+			{
+				pUnaryOperation->operater(ioc::UnaryOperation::K_VOID);
+			}
+			else if(!antlr_string->compare(antlr_string, "typeof"))
+			{
+				pUnaryOperation->operater(ioc::UnaryOperation::K_TYPEOF);
+			}
+			else
+			{
+				IOC_LOG_SEV(DEBUG) << "Operator ["
+					<< antlr_string->chars << "] is unknown!!";
+				return NULL;
+			}
+		}
+	}
+	return GetAstHandle(pUnaryOperation);
+}
+
+/// TODO This function is used until PHP frontend support `m_hasVar` member.
+AST_NODE_HANDLE IOC_CreateVariableProxy(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN identifier
+) {
+	ioc::VariableProxy* pVariableProxy =
+		(ioc::VariableProxy*)ioc::AstFactory::createAstNode(IocAst_kVariableProxy);
+	AsignSrcinfoToNode(pVariableProxy,srcInfo);
+
+	pVariableProxy->js_identifier((char*)identifier->getText(identifier)->chars);
+	
+	return GetAstHandle(pVariableProxy);
+}
+
+/**
+ * @brief `arrayLiteral` parser rule in grammar.
+ * @example "[a,b,c]"
+ **/
+AST_NODE_HANDLE IOC_CreateArrayLiteral(
+	ioc_src_info *srcInfo
+) {
+	ioc::ArrayLiteral* pArrayLiteral = 
+		(ioc::ArrayLiteral*)ioc::AstFactory::createAstNode(IocAst_kArrayLiteral);
+	AsignSrcinfoToNode(pArrayLiteral,srcInfo);
+	
+	return GetAstHandle(pArrayLiteral);
+}
+
+AST_NODE_HANDLE IOC_AppendArrayLiteral(
+	AST_NODE_HANDLE self,
+	AST_NODE_HANDLE e
+) {
+	ioc::ArrayLiteral* pContainer = GetAstNode(self)->AsArrayLiteral();
+	if(pContainer)
+	{
+		pContainer->push_back(GetAstNode(e));
+		return self;
+	}
+
+	return NULL;
+}
+
+/**
+ * @brief `objectLiteral` parser rule in grammar.
+ * @example "{a:1,b:2,c:3}"
+ **/
+AST_NODE_HANDLE IOC_CreateObjectLiteral(
+	ioc_src_info *srcInfo
+) {
+	ioc::ObjectLiteral* pObjectLiteral =
+		(ioc::ObjectLiteral*)ioc::AstFactory::createAstNode(IocAst_kObjectLiteral);
+	AsignSrcinfoToNode(pObjectLiteral,srcInfo);
+
+	return GetAstHandle(pObjectLiteral);
+}
+
+AST_NODE_HANDLE IOC_AppendObjectLiteral(
+	AST_NODE_HANDLE self,
+	AST_NODE_HANDLE e
+)
+{
+	ioc::ObjectLiteral* pContainer = GetAstNode(self)->AsObjectLiteral();
+	if(pContainer)
+	{
+		pContainer->push_back(GetAstNode(e));
+		
+		return self;
+	}
+	return NULL;
+}
+
+/**
+ * @brief `propertyNameAndValue` parser rule in grammar.
+ * @example "a:1" in "{a:1,b:2,c:3}"
+ **/
+AST_NODE_HANDLE IOC_CreatePropertyNameAndValue(
+	ioc_src_info *srcInfo,
+	AST_NODE_HANDLE name,
+	AST_NODE_HANDLE e
+) {
+	// Create parent node.
+	ioc::PropertyNameAndValue* pPropertyNameAndValue =
+		(ioc::PropertyNameAndValue*)ioc::AstFactory::createAstNode(IocAst_kPropertyNameAndValue);
+	AsignSrcinfoToNode(pPropertyNameAndValue,srcInfo);
+
+	pPropertyNameAndValue->name(GetAstNode(name));
+	pPropertyNameAndValue->expression(GetAstNode(e));
+	
+	return GetAstHandle(pPropertyNameAndValue);
+}
+
+AST_NODE_HANDLE IOC_CreateStringLiteral(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN str
+) {
+	ioc::StringLiteral* pStringLiteral = 
+		(ioc::StringLiteral*)ioc::AstFactory::createAstNode(IocAst_kStringLiteral);
+	AsignSrcinfoToNode(pStringLiteral,srcInfo);
+
+	// Token is not empty
+	if (str) {
+		pANTLR3_STRING antlr_string = str->getText(str);
+		//@FIXME: shall we need process escape here?
+		pStringLiteral->str((char*)antlr_string->chars);
+	// Token is empty.
+	} else {
+		// ...
+	}
+	
+	return GetAstHandle(pStringLiteral);
+}
+
+AST_NODE_HANDLE IOC_CreateNumberLiteral(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN num
+)
+{
+	ioc::NumberLiteral* pNumberLiteral = 
+		(ioc::NumberLiteral*)ioc::AstFactory::createAstNode(IocAst_kNumberLiteral);
+	AsignSrcinfoToNode(pNumberLiteral,srcInfo);
+	if (num) {
+		pANTLR3_STRING antlr_string = num->getText(num);
+		pNumberLiteral->num((char*)antlr_string->chars);
+	}
+
+	return GetAstHandle(pNumberLiteral);
+}
+
+/**
+ * @brief A node for null value.
+ * @example var a=null;
+ **/
+AST_NODE_HANDLE IOC_CreateNullLiteral(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN str
+) {
+	ioc::NullLiteral* pNullLiteral = 
+		(ioc::NullLiteral*)ioc::AstFactory::createAstNode(IocAst_kNullLiteral);
+	AsignSrcinfoToNode(pNullLiteral,srcInfo);
+
+	if (str) {
+		pANTLR3_STRING antlr_string = str->getText(str);
+		pNullLiteral->value((char*)antlr_string->chars);
+	}
+
+	return GetAstHandle(pNullLiteral);
+}
+
+/**
+ * @brief A node for bool value.
+ * @example var a=true;
+ **/
+AST_NODE_HANDLE IOC_CreateBooleanLiteral(
+	ioc_src_info *srcInfo,
+	pANTLR3_COMMON_TOKEN str
+) {
+	ioc::BooleanLiteral* pBooleanLiteral = 
+		(ioc::BooleanLiteral*)ioc::AstFactory::createAstNode(IocAst_kBooleanLiteral);
+	AsignSrcinfoToNode(pBooleanLiteral,srcInfo);
+
+	if (str) {
+		pANTLR3_STRING antlr_string = str->getText(str);
+		char* value_char = (char*)antlr_string->chars;
+		if(STREQ(value_char, "true")) {
+			pBooleanLiteral->setValue(true);
+		} else {
+			pBooleanLiteral->setValue(false);
+		}
+	}
+	
+	return GetAstHandle(pBooleanLiteral);
+}
 
 
 #ifdef __cplusplus
