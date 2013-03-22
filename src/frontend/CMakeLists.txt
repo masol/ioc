@@ -47,10 +47,13 @@ ADD_CUSTOM_COMMAND(
 set(FRONTEND_SRCS
 	antlrhelper.cpp
 	astfactory.cpp
+	parser.cpp
+	ast.cpp
 	${IOC_ANTLR_OUTPUT_DIR}/javascriptParser.c
 	${IOC_ANTLR_OUTPUT_DIR}/javascriptLexer.c
 	)
 
 include_directories("${ANTLR_INCLUDE_DIR}")
+include_directories("${IOC_ANTLR_OUTPUT_DIR}")
 
 add_library(frontend STATIC ${FRONTEND_SRCS})

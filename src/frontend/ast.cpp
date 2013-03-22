@@ -17,26 +17,14 @@
 //  IOC website: http://www.masols.com                                    //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "config.h"
-#include "frontend/astfactory.h"
 
-namespace ioc
-{
-	AstNode*	AstFactory::createAstNode(IOCASTTYPES type)
-	{
-		AstNode* ret = NULL;
-		
-#define CREATE_TYPE_INSTANCE(type) \
-	case IocAst_k##type:	\
-		ret = new type();	\
-		break;
-		
-		switch(type){
-			AST_NODE_LIST(CREATE_TYPE_INSTANCE)
-		//prevent compiler error.
-		default:
-			break;
-		}
-		return ret;
-	}
-}
+#include "config.h"
+#include "frontend/ast.h"
+
+
+namespace ioc{
+
+unsigned AstNode::current_id_ = 0;
+
+
+} //end namespace ioc

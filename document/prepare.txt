@@ -13,16 +13,8 @@ antlr & antlr C target:
 1. download antlr and antlr source from http://www.antlr3.org/download.html.
 2. see https://github.com/antlr/antlr/issues/4 to remove antlr c target file.
 3. compile c target.
+4. use antlr3.2.jar to compiler grammar.3.3-3.5 has bug,need patch.
 
-prepare v8:
-1. checkout from http://v8.googlecode.com/svn/trunk to c:\depends\v8
-2. cd c:\depends\v8
-3. run command : 
-   svn co -q http://gyp.googlecode.com/svn/trunk build/gyp
-   svn co -q http://src.chromium.org/svn/trunk/deps/third_party/cygwin@66844 third_party/cygwin
-   svn co -q http://src.chromium.org/svn/trunk/tools/third_party/python_26@89111 third_party/python_26
-4. then run command to generate sln files:
-   third_party\python_26\python.exe build\gyp_v8 -Dcomponent=shared_library -Dtarget_arch=x64 -G msvs_version=2008
-   see here to 
-
+cppunit:
+1. download from http://sourceforge.net/projects/cppunit/
    

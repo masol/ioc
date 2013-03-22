@@ -154,9 +154,8 @@ class Expression;
 	protected:
 		friend class AstVisitor;
 		/// @brief 实现了通用的遍历方法。派生类可以以类似方式实现Traversal并根据AstVisitor的类型重定向到AstNode的不同方法上去——比如codegen.
-		virtual void Traversal(AstVisitor* v);
+		//virtual void Traversal(AstVisitor* v);
 
-		//virtual void Traversal(AstNode* node);
 		AstNode(int l,int c,const std::string& filename) : 
 			id_(GetNextId()),
 			line_(l), column_(c),sourceName_(filename)
@@ -168,7 +167,7 @@ class Expression;
 		{
 		}
 	public:
-	    virtual void Traversal(AstVisitor* v, int num);
+	    //virtual void Traversal(AstVisitor* v, int num);
 		virtual ~AstNode() {}
 		
 		/// @brief print node type name

@@ -16,27 +16,29 @@
 //                                                                        //
 //  IOC website: http://www.masols.com                                    //
 ////////////////////////////////////////////////////////////////////////////
+/** \file
+ * This file from the ANTLR3 sample project "treeparser"
+ */
+#ifndef	IOC_FRONTEND_PARSERHELPER_H
+#define	IOC_FRONTEND_PARSERHELPER_H
 
-#include "config.h"
-#include "frontend/astfactory.h"
+#ifdef	__xlc__
+/* For reasons unknown, AIX xlC compiler is the only thing that won't accept C++ style 
+ * comments without specifically telling it to.
+ */
+#pragma options cpluscmt
+#endif
 
-namespace ioc
-{
-	AstNode*	AstFactory::createAstNode(IOCASTTYPES type)
-	{
-		AstNode* ret = NULL;
-		
-#define CREATE_TYPE_INSTANCE(type) \
-	case IocAst_k##type:	\
-		ret = new type();	\
-		break;
-		
-		switch(type){
-			AST_NODE_LIST(CREATE_TYPE_INSTANCE)
-		//prevent compiler error.
-		default:
-			break;
-		}
-		return ret;
-	}
-}
+// First thing we always do is include the ANTLR3 generated files, which
+// will automatically include the antlr3 runtime header files.
+// The compiler must use -I (or set the project settings in VS2005)
+// to locate the antlr3 runtime files and -I. to find this file
+//
+#include    "javascriptLexer.h"
+#include    "javascriptParser.h"
+
+#ifdef	WIN32
+#pragma warning( disable : 4100 )
+#endif
+
+#endif	//IOC_FRONTEND_PARSERHELPER_H

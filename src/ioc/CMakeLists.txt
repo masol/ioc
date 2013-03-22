@@ -34,7 +34,7 @@ if(DOXYGEN_FOUND)
 	  "${DOXYGEN_IOC_TEMPLATE}"
 	  )
 
-	message(STATUS "IOC_BUILD_DIR: " ${IOC_BUILD_DIR})
+	#message(STATUS "IOC_BUILD_DIR: " ${IOC_BUILD_DIR})
 
 	set(DOXYGEN_IOC_INPUT ${IOC_BUILD_DIR}/doxygen-ioc.conf)
 	set(DOXYGEN_IOC_OUTPUT_DIR ${IOC_BUILD_DIR}/doc/ioc)
@@ -82,4 +82,4 @@ set(IOC_SRCS
 
 add_executable(ioc ${IOC_SRCS})
 
-TARGET_LINK_LIBRARIES(ioc utils)
+TARGET_LINK_LIBRARIES(ioc utils frontend ${ANTLR_LIBRARIES})

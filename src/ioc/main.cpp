@@ -20,6 +20,8 @@
 #include "config.h"
 #include "utils/option.h"
 #include "utils/log.h"
+#include "frontend/parser.h"
+#include <boost/shared_ptr.hpp>
 #include <stdio.h>
 
 
@@ -37,6 +39,11 @@ int main(int argc,const char * argv[])
 		while(it != srcset.end())
 		{
 			std::cout << "Compiling " << *it << std::endl;
+
+			boost::shared_ptr<ioc::frontend::Parser> pParser;
+			pParser.reset(new ioc::frontend::Parser());
+			pParser->parser(*it);
+
 			it++;
 		}
 	}
