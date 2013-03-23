@@ -84,7 +84,7 @@ AST_NODE_HANDLE IOC_CreateSourceElements(
 	const char *fileName
 )
 {
-	ioc::SourceElements* pSourceElements = 
+	ioc::SourceElements* pSourceElements =
 		(ioc::SourceElements*)ioc::AstFactory::createAstNode(IocAst_kSourceElements);
 	AsignSrcinfoToNode(pSourceElements,srcInfo);
 	pSourceElements->setSourceName(fileName);
@@ -95,7 +95,7 @@ AST_NODE_HANDLE IOC_AppendSourceElements(
 	AST_NODE_HANDLE srcEle,
 	AST_NODE_HANDLE ele
 ) {
-	ioc::SourceElements* pContainer = 
+	ioc::SourceElements* pContainer =
 		GetAstNode(srcEle)->AsSourceElements();
 
 	if(pContainer)
@@ -116,7 +116,7 @@ AST_NODE_HANDLE IOC_CreateFunctionDeclaration(
 	AST_NODE_HANDLE param,
 	AST_NODE_HANDLE body
 ) {
-	ioc::FunctionDeclaration* pFunctionDeclaration = 
+	ioc::FunctionDeclaration* pFunctionDeclaration =
 		(ioc::FunctionDeclaration*)ioc::AstFactory::createAstNode(IocAst_kFunctionDeclaration);
 
 	AsignSrcinfoToNode(pFunctionDeclaration,srcInfo);
@@ -132,7 +132,7 @@ AST_NODE_HANDLE IOC_CreateFunctionDeclaration(
 
 	pFunctionDeclaration->param(GetAstNode(param));
 	pFunctionDeclaration->body(GetAstNode(body));
-	
+
 	return GetAstHandle(pFunctionDeclaration);
 }
 
@@ -157,7 +157,7 @@ AST_NODE_HANDLE IOC_CreateFunctionExpression(
 	if(nameToken) {
 		ANTLRSTR2STDSTR(nameToken, str);
 	}
-	
+
 	pFunctionExpression->name(str);
 	pFunctionExpression->param(GetAstNode(param));
 	pFunctionExpression->body(GetAstNode(body));
@@ -174,7 +174,7 @@ AST_NODE_HANDLE IOC_CreateFormalParameterList(
 	ioc_src_info *srcInfo
 ) {
 	// Create parent node.
-	ioc::FormalParameterList* pFormalParameterList = 
+	ioc::FormalParameterList* pFormalParameterList =
 		(ioc::FormalParameterList*)ioc::AstFactory::createAstNode(IocAst_kFormalParameterList);
 
 	AsignSrcinfoToNode(pFormalParameterList,srcInfo);
@@ -198,9 +198,9 @@ AST_NODE_HANDLE IOC_AppendFormalParameterList(
 		AsignSrcinfoToNode(pVariableProxy,srcInfo);
 		pANTLR3_STRING str = identifier->getText(identifier);
 		pVariableProxy->js_identifier((char*)str->chars);
-	
+
 		pContainer->push_back(GetAstNode(pVariableProxy));
-		
+
 		return self;
 	}
 	return NULL;
@@ -214,7 +214,7 @@ AST_NODE_HANDLE IOC_AppendFormalParameterList(
 AST_NODE_HANDLE IOC_CreateVariableDeclarationList(
 	ioc_src_info *srcInfo
 ) {
-	ioc::VariableDeclarationList* pVariableDeclarationList = 
+	ioc::VariableDeclarationList* pVariableDeclarationList =
 		(ioc::VariableDeclarationList*)ioc::AstFactory::createAstNode(IocAst_kVariableDeclarationList);
 
 	AsignSrcinfoToNode(pVariableDeclarationList,srcInfo);
@@ -264,11 +264,11 @@ AST_NODE_HANDLE IOC_CreateVariableDeclaration_WithVar(
 
 	ioc::Assignment* pAssignment = (ioc::Assignment*)ioc::AstFactory::createAstNode(IocAst_kAssignment);
 	AsignSrcinfoToNode(pAssignment,srcInfo);
-		
-	pAssignment->operater(ioc::Assignment::T_EQU); // Must be '='.
+
+	pAssignment->opName("="); // Must be '='.
 	pAssignment->left(GetAstNode(pVariableProxy));
 	pAssignment->right(GetAstNode(initialiser));
-		
+
 	return GetAstHandle(pAssignment);
 }
 
@@ -283,13 +283,13 @@ AST_NODE_HANDLE IOC_CreateVariableProxy_WithVar(
 ) {
 	ioc::VariableProxy* pVariableProxy =
 		(ioc::VariableProxy*)ioc::AstFactory::createAstNode(IocAst_kVariableProxy);
-		
+
 	AsignSrcinfoToNode(pVariableProxy,srcInfo);
 
 	std::string str((char*)identifier->getText(identifier)->chars);
 	pVariableProxy->js_identifier(str);
 	pVariableProxy->isDeclaration(ANTLR3_TRUE);
-	
+
 	return GetAstHandle(pVariableProxy);
 }
 
@@ -302,7 +302,7 @@ AST_NODE_HANDLE IOC_CreateEmptyStatement(
 	ioc_src_info *srcInfo,
 	pANTLR3_COMMON_TOKEN token
 ) {
-	ioc::EmptyStatement* pEmptyStatement = 
+	ioc::EmptyStatement* pEmptyStatement =
 		(ioc::EmptyStatement*)ioc::AstFactory::createAstNode(IocAst_kEmptyStatement);
 	AsignSrcinfoToNode(pEmptyStatement,srcInfo);
 	return GetAstHandle(pEmptyStatement);
@@ -321,18 +321,18 @@ AST_NODE_HANDLE IOC_CreateIfStatement(
 	AST_NODE_HANDLE s1,
 	AST_NODE_HANDLE s2
 ) {
-	ioc::IfStatement* pIfStatement = 
+	ioc::IfStatement* pIfStatement =
 		(ioc::IfStatement*)ioc::AstFactory::createAstNode(IocAst_kIfStatement);
 	AsignSrcinfoToNode(pIfStatement,srcInfo);
 
 	pIfStatement->conditionExpression(GetAstNode(e));
 	pIfStatement->thenStatement(GetAstNode(s1));
-	
+
 	// If there is no "else" statement, it is just like "else `emptyStatement`"
 	if(s2) {
 		pIfStatement->elseStatement(GetAstNode(s2));
 	} else {
-		ioc::EmptyStatement* pEmptyStatement = 
+		ioc::EmptyStatement* pEmptyStatement =
 			(ioc::EmptyStatement*)ioc::AstFactory::createAstNode(IocAst_kEmptyStatement);
 		AsignSrcinfoToNode(pEmptyStatement,srcInfo);
 		pIfStatement->elseStatement(GetAstNode(pEmptyStatement));
@@ -353,7 +353,7 @@ AST_NODE_HANDLE IOC_CreateDoWhileStatement(
 	AST_NODE_HANDLE e
 )
 {
-	ioc::DoWhileStatement* pDoWhileStatement = 
+	ioc::DoWhileStatement* pDoWhileStatement =
 		(ioc::DoWhileStatement*)ioc::AstFactory::createAstNode(IocAst_kDoWhileStatement);
 	AsignSrcinfoToNode(pDoWhileStatement,srcInfo);
 
@@ -374,7 +374,7 @@ AST_NODE_HANDLE IOC_CreateWhileStatement(
 	AST_NODE_HANDLE e,
 	AST_NODE_HANDLE s
 ) {
-	ioc::WhileStatement* pWhileStatement = 
+	ioc::WhileStatement* pWhileStatement =
 		(ioc::WhileStatement*)ioc::AstFactory::createAstNode(IocAst_kWhileStatement);
 	AsignSrcinfoToNode(pWhileStatement,srcInfo);
 
@@ -396,7 +396,7 @@ AST_NODE_HANDLE IOC_CreateForStatement(
 	AST_NODE_HANDLE e2,
 	AST_NODE_HANDLE s
 ) {
-	ioc::ForStatement* pForStatement = 
+	ioc::ForStatement* pForStatement =
 		(ioc::ForStatement*)ioc::AstFactory::createAstNode(IocAst_kForStatement);
 	AsignSrcinfoToNode(pForStatement,srcInfo);
 
@@ -428,7 +428,7 @@ AST_NODE_HANDLE IOC_CreateForInStatement(
 	pForInStatement->init(GetAstNode(i));
 	pForInStatement->enumerable(GetAstNode(e));
 	pForInStatement->body(GetAstNode(s));
-	
+
 	return GetAstHandle(pForInStatement);
 }
 
@@ -499,7 +499,7 @@ AST_NODE_HANDLE IOC_CreateReturnStatement(
 	if(e) {
 		pReturnStatement->expression(GetAstNode(e));
 	}
-	
+
 	return GetAstHandle(pReturnStatement);
 }
 
@@ -521,7 +521,7 @@ AST_NODE_HANDLE IOC_CreateWithStatement(
 
 	pWithStatement->expression(GetAstNode(e));
 	pWithStatement->statement(GetAstNode(s));
-	
+
 	return GetAstHandle(pWithStatement);
 }
 
@@ -543,7 +543,7 @@ AST_NODE_HANDLE IOC_CreateLabelledStatement(
 	// Create label statement node.
 	ioc::LabelledStatement* pLabelledStatement =
 		(ioc::LabelledStatement*)ioc::AstFactory::createAstNode(IocAst_kLabelledStatement);
-	
+
 	// position of this label statement in source code.
 	AsignSrcinfoToNode(pLabelledStatement,srcInfo);
 
@@ -551,7 +551,7 @@ AST_NODE_HANDLE IOC_CreateLabelledStatement(
 	pLabelledStatement->identifier(ioc_char);
 	// Set his child, a statement.
 	pLabelledStatement->statement(GetAstNode(s));
-	
+
 	return GetAstHandle(pLabelledStatement);
 }
 
@@ -573,7 +573,7 @@ AST_NODE_HANDLE IOC_CreateSwitchStatement(
 
 	pSwitchStatement->expression(GetAstNode(e));
 	pSwitchStatement->caseBlock(GetAstNode(b));
-	
+
 	return GetAstHandle(pSwitchStatement);
 }
 
@@ -585,10 +585,10 @@ AST_NODE_HANDLE IOC_CreateSwitchStatement(
 AST_NODE_HANDLE IOC_CreateCaseBlock(
 	ioc_src_info *srcInfo
 ) {
-	ioc::CaseBlock* pCaseBlock = 
+	ioc::CaseBlock* pCaseBlock =
 		(ioc::CaseBlock*)ioc::AstFactory::createAstNode(IocAst_kCaseBlock);
 	AsignSrcinfoToNode(pCaseBlock,srcInfo);
-	
+
 	return GetAstHandle(pCaseBlock);
 }
 
@@ -628,7 +628,7 @@ AST_NODE_HANDLE IOC_CreateCaseClause(
 
 	pCaseClause->expression(GetAstNode(e));
 	pCaseClause->statement(GetAstNode(s));
-	
+
 	return GetAstHandle(pCaseClause);
 }
 
@@ -647,7 +647,7 @@ AST_NODE_HANDLE IOC_CreateDefaultClause(
 	AsignSrcinfoToNode(pDefaultClause,srcInfo);
 
 	pDefaultClause->statement(GetAstNode(s));
-	
+
 	return GetAstHandle(pDefaultClause);
 }
 
@@ -666,7 +666,7 @@ AST_NODE_HANDLE IOC_CreateThrow(
 	AsignSrcinfoToNode(pThrow,srcInfo);
 
 	pThrow->expression(GetAstNode(e));
-	
+
 	return GetAstHandle(pThrow);
 }
 
@@ -689,7 +689,7 @@ AST_NODE_HANDLE IOC_CreateTryStatement(
 	pTryStatement->statement(GetAstNode(s));
 	pTryStatement->catchClause(GetAstNode(c));
 	pTryStatement->finallyClause(GetAstNode(f));
-	
+
 	return GetAstHandle(pTryStatement);
 }
 
@@ -720,7 +720,7 @@ AST_NODE_HANDLE IOC_CreateTryCatchStatement(
 
 	pTryCatchStatement->init(GetAstNode(pVariableProxy));
 	pTryCatchStatement->statement(GetAstNode(s));
-	
+
 	return GetAstHandle(pTryCatchStatement);
 }
 
@@ -739,7 +739,7 @@ AST_NODE_HANDLE IOC_CreateTryFinallyStatement(
 	AsignSrcinfoToNode(pTryFinallyStatement,srcInfo);
 
 	pTryFinallyStatement->statement(GetAstNode(s));
-	
+
 	return GetAstHandle(pTryFinallyStatement);
 }
 
@@ -750,7 +750,7 @@ AST_NODE_HANDLE IOC_CreateBinaryOperation(
 	AST_NODE_HANDLE left,
 	AST_NODE_HANDLE right
 ) {
-	ioc::BinaryOperation* pOperation = 
+	ioc::BinaryOperation* pOperation =
 		(ioc::BinaryOperation*)ioc::AstFactory::createAstNode(IocAst_kBinaryOperation);
 	AsignSrcinfoToNode(pOperation,srcInfo);
 
@@ -762,49 +762,6 @@ AST_NODE_HANDLE IOC_CreateBinaryOperation(
 		const char* ioc_operation = (char*)(str->chars);
 		pOperation->opName(ioc_operation);
 		// Binary operator.
-		if(STREQ(ioc_operation, "+")) {
-			pOperation->operater(ioc::BinaryOperation::T_ADD);
-		}
-		else if(STREQ(ioc_operation, "-")) {
-			pOperation->operater(ioc::BinaryOperation::T_SUB);
-		}
-		else if(STREQ(ioc_operation, "*")) {
-			pOperation->operater(ioc::BinaryOperation::T_MUL);
-		}
-		else if(STREQ(ioc_operation, "/")) {
-			pOperation->operater(ioc::BinaryOperation::T_DIV);
-		}
-		else if(STREQ(ioc_operation, "%")) {
-			pOperation->operater(ioc::BinaryOperation::T_MOD);
-		}
-		else if(STREQ(ioc_operation, "|")) {
-			pOperation->operater(ioc::BinaryOperation::T_BIT_OR);
-		}
-		else if(STREQ(ioc_operation, "^")) {
-			pOperation->operater(ioc::BinaryOperation::T_BIT_XOR);
-		}
-		else if(STREQ(ioc_operation, "&")) {
-			pOperation->operater(ioc::BinaryOperation::T_BIT_AND);
-		}
-		else if(STREQ(ioc_operation, "||")) {
-			pOperation->operater(ioc::BinaryOperation::T_OR);
-		}
-		else if(STREQ(ioc_operation, "&&")) {
-			pOperation->operater(ioc::BinaryOperation::T_AND);
-		}
-		else if(STREQ(ioc_operation, "<<")) {
-			pOperation->operater(ioc::BinaryOperation::T_SHL);
-		}
-		else if(STREQ(ioc_operation, ">>")) {
-			pOperation->operater(ioc::BinaryOperation::T_SHR);
-		}
-		else if(STREQ(ioc_operation, ">>>")) {
-			pOperation->operater(ioc::BinaryOperation::T_SAR);
-		}
-		// Special operator.
-		else if(STREQ(ioc_operation, ",")) {
-			pOperation->operater(ioc::BinaryOperation::T_COMMA);
-		}
 	}
 	return GetAstHandle(pOperation);
 }
@@ -821,53 +778,17 @@ AST_NODE_HANDLE IOC_CreateAssignment(
 	AST_NODE_HANDLE right
 )
 {
-	ioc::Assignment* pAssignment = 
+	ioc::Assignment* pAssignment =
 		(ioc::Assignment*)ioc::AstFactory::createAstNode(IocAst_kAssignment);
 	AsignSrcinfoToNode(pAssignment,srcInfo);
 
 	pAssignment->left(GetAstNode(left));
 	pAssignment->right(GetAstNode(right));
-		
+
 	pANTLR3_STRING str = op->getText(op);
 	if(str && str->len){
 		const char* ioc_operation = (char*)(str->chars);
 		pAssignment->opName(ioc_operation);
-		if(STREQ(ioc_operation, "=")) {
-			pAssignment->operater(ioc::Assignment::T_EQU);
-		}
-		else if(STREQ(ioc_operation, "*=")) {
-			pAssignment->operater(ioc::Assignment::T_MUL);
-		}
-		else if(STREQ(ioc_operation, "/=")) {
-			pAssignment->operater(ioc::Assignment::T_DIV);
-		}
-		else if(STREQ(ioc_operation, "%=")) {
-			pAssignment->operater(ioc::Assignment::T_MOD);
-		}
-		else if(STREQ(ioc_operation, "+=")) {
-			pAssignment->operater(ioc::Assignment::T_ADD);
-		}
-		else if(STREQ(ioc_operation, "-=")) {
-			pAssignment->operater(ioc::Assignment::T_SUB);
-		}
-		else if(STREQ(ioc_operation, "<<=")) {
-			pAssignment->operater(ioc::Assignment::T_SHL);
-		}
-		else if(STREQ(ioc_operation, ">>=")) {
-			pAssignment->operater(ioc::Assignment::T_SHR);
-		}
-		else if(STREQ(ioc_operation, ">>>=")) {
-			pAssignment->operater(ioc::Assignment::T_SHR_ZEROFILL);
-		}
-		else if(STREQ(ioc_operation, "&=")) {
-			pAssignment->operater(ioc::Assignment::T_AND);
-		}
-		else if(STREQ(ioc_operation, "^=")) {
-			pAssignment->operater(ioc::Assignment::T_XOR);
-		}
-		else if(STREQ(ioc_operation, "|=")) {
-			pAssignment->operater(ioc::Assignment::T_OR);
-		}
 	}
 	return GetAstHandle(pAssignment);
 }
@@ -888,7 +809,7 @@ AST_NODE_HANDLE IOC_CreateNewExpression(
 
 	pNewExpression->expression(GetAstNode(e));
 	pNewExpression->argument(GetAstNode(arg));
-	
+
 	return GetAstHandle(pNewExpression);
 }
 
@@ -900,10 +821,10 @@ AST_NODE_HANDLE IOC_CreateNewExpression(
 AST_NODE_HANDLE IOC_CreateMultiPropertyAccessor(
 	ioc_src_info *srcInfo
 ) {
-	ioc::MultiPropertyAccessor* pMultiPropertyAccessor = 
+	ioc::MultiPropertyAccessor* pMultiPropertyAccessor =
 		(ioc::MultiPropertyAccessor*)ioc::AstFactory::createAstNode(IocAst_kMultiPropertyAccessor);
 	AsignSrcinfoToNode(pMultiPropertyAccessor,srcInfo);
-	
+
 	return GetAstHandle(pMultiPropertyAccessor);
 }
 
@@ -947,7 +868,7 @@ AST_NODE_HANDLE IOC_CreateCall(
 	}
 
 	pCall->arguments(GetAstNode(a));
-	
+
 	return GetAstHandle(pCall);
 }
 
@@ -958,7 +879,7 @@ AST_NODE_HANDLE IOC_CreateCall(
 AST_NODE_HANDLE IOC_CreateArguments(
 	ioc_src_info *srcInfo
 ) {
-	ioc::Arguments* pArguments = 
+	ioc::Arguments* pArguments =
 		(ioc::Arguments*)ioc::AstFactory::createAstNode(IocAst_kArguments);
 	AsignSrcinfoToNode(pArguments,srcInfo);
 
@@ -997,7 +918,7 @@ AST_NODE_HANDLE IOC_CreateIndexSuffix(
 	AsignSrcinfoToNode(pIndexSuffix,srcInfo);
 
 	pIndexSuffix->expression(GetAstNode(e));
-	
+
 	return GetAstHandle(pIndexSuffix);
 }
 
@@ -1017,7 +938,7 @@ AST_NODE_HANDLE IOC_CreatePropertyReferenceSuffix(
 
 	pANTLR3_STRING str = identifier->getText(identifier);
 	pPropertyReferenceSuffix->name((char*)str->chars);
-	
+
 	return GetAstHandle(pPropertyReferenceSuffix);
 }
 
@@ -1035,7 +956,7 @@ AST_NODE_HANDLE IOC_CreateConditional(
 	pConditional->condition(GetAstNode(e));
 	pConditional->valueIfTrue(GetAstNode(e1));
 	pConditional->valueIfFalse(GetAstNode(e2));
-	
+
 	return GetAstHandle(pConditional);
 }
 
@@ -1045,7 +966,7 @@ AST_NODE_HANDLE IOC_CreateCompareOperation(
 	AST_NODE_HANDLE left,
 	AST_NODE_HANDLE right
 ) {
-	ioc::CompareOperation* pOperation = 
+	ioc::CompareOperation* pOperation =
 		(ioc::CompareOperation*)ioc::AstFactory::createAstNode(IocAst_kCompareOperation);
 	AsignSrcinfoToNode(pOperation,srcInfo);
 
@@ -1055,36 +976,6 @@ AST_NODE_HANDLE IOC_CreateCompareOperation(
 	if(str && str->len){
 		char* ioc_operation = (char*)(str->chars);
 		pOperation->opName(ioc_operation);
-		if(STREQ(ioc_operation, "<")) {
-			pOperation->operater(ioc::CompareOperation::T_LT);
-		}
-		else if(STREQ(ioc_operation, ">")) {
-			pOperation->operater(ioc::CompareOperation::T_GT);
-		}
-		else if(STREQ(ioc_operation, "==")) {
-			pOperation->operater(ioc::CompareOperation::T_EQU);
-		}
-		else if(STREQ(ioc_operation, "!=")) {
-			pOperation->operater(ioc::CompareOperation::T_NOTEQU);
-		}
-		else if(STREQ(ioc_operation, "<=")) {
-			pOperation->operater(ioc::CompareOperation::T_LE);
-		}
-		else if(STREQ(ioc_operation, ">=")) {
-			pOperation->operater(ioc::CompareOperation::T_GE);
-		}
-		else if(STREQ(ioc_operation, "===")) {
-			pOperation->operater(ioc::CompareOperation::T_EXEQU);
-		}
-		else if(STREQ(ioc_operation, "!==")) {
-			pOperation->operater(ioc::CompareOperation::T_EXNOTEQU);
-		}
-		else if(STREQ(ioc_operation, "instanceof")) {
-			pOperation->operater(ioc::CompareOperation::T_INSTANCEOF);
-		}
-		else if(STREQ(ioc_operation, "in")) {
-			pOperation->operater(ioc::CompareOperation::T_IN);
-		}
 	}
 	return GetAstHandle(pOperation);
 }
@@ -1100,81 +991,16 @@ AST_NODE_HANDLE IOC_CreateUnaryOperation(
 	AST_NODE_HANDLE e
 ) {
 	pANTLR3_STRING antlr_string = token->getText(token);
-	
-	ioc::UnaryOperation* pUnaryOperation = 
+
+	ioc::UnaryOperation* pUnaryOperation =
 		(ioc::UnaryOperation*)ioc::AstFactory::createAstNode(IocAst_kUnaryOperation);
 	AsignSrcinfoToNode(pUnaryOperation,srcInfo);
-	
+
 	pUnaryOperation->expression(GetAstNode(e));
 	pUnaryOperation->isFrontOp(isFrontOp == ANTLR3_TRUE);
-	
+
 	// Save the op name as a string, only for debug.
 	pUnaryOperation->opName((char*)antlr_string->chars);
-	
-	if(antlr_string && antlr_string->len){
-		// Single char op.
-		if(antlr_string->chars[1] == (char)0){
-            switch(antlr_string->chars[0])
-            {
-				// With/without `+`, they are the same. So do nothing
-                case '+':
-                {
-					pUnaryOperation->operater(ioc::UnaryOperation::T_PLUS);
-                }
-                break;
-                case '-':
-                {
-					/**
-					 * "-a" => "0-a"
-					 * "-(a+b)" => "0-(a+b)"
-					 * -1和-1.1直接修改节点。
-					 **/
-					// -1
-					pUnaryOperation->operater(ioc::UnaryOperation::T_MINUS);
-                }
-                break;
-                case '~':
-                {
-                    pUnaryOperation->operater(ioc::UnaryOperation::T_TILDE);
-                }
-                break;
-                case '!':
-                {
-                    pUnaryOperation->operater(ioc::UnaryOperation::T_NOT);
-                }
-                break;
-            }
-			
-		// Double/Multi chars op.
-		}else{
-			if(!antlr_string->compare(antlr_string, "++"))
-			{
-				pUnaryOperation->operater(ioc::UnaryOperation::T_ADDADD);
-			}
-			else if(!antlr_string->compare(antlr_string, "--"))
-			{
-				pUnaryOperation->operater(ioc::UnaryOperation::T_SUBSUB);
-			}
-			else if(!antlr_string->compare(antlr_string, "delete"))
-			{
-				pUnaryOperation->operater(ioc::UnaryOperation::K_DELETE);
-			}
-			else if(!antlr_string->compare(antlr_string, "void"))
-			{
-				pUnaryOperation->operater(ioc::UnaryOperation::K_VOID);
-			}
-			else if(!antlr_string->compare(antlr_string, "typeof"))
-			{
-				pUnaryOperation->operater(ioc::UnaryOperation::K_TYPEOF);
-			}
-			else
-			{
-				IOC_LOG_SEV(DEBUG) << "Operator ["
-					<< antlr_string->chars << "] is unknown!!";
-				return NULL;
-			}
-		}
-	}
 	return GetAstHandle(pUnaryOperation);
 }
 
@@ -1188,7 +1014,7 @@ AST_NODE_HANDLE IOC_CreateVariableProxy(
 	AsignSrcinfoToNode(pVariableProxy,srcInfo);
 
 	pVariableProxy->js_identifier((char*)identifier->getText(identifier)->chars);
-	
+
 	return GetAstHandle(pVariableProxy);
 }
 
@@ -1199,10 +1025,10 @@ AST_NODE_HANDLE IOC_CreateVariableProxy(
 AST_NODE_HANDLE IOC_CreateArrayLiteral(
 	ioc_src_info *srcInfo
 ) {
-	ioc::ArrayLiteral* pArrayLiteral = 
+	ioc::ArrayLiteral* pArrayLiteral =
 		(ioc::ArrayLiteral*)ioc::AstFactory::createAstNode(IocAst_kArrayLiteral);
 	AsignSrcinfoToNode(pArrayLiteral,srcInfo);
-	
+
 	return GetAstHandle(pArrayLiteral);
 }
 
@@ -1243,7 +1069,7 @@ AST_NODE_HANDLE IOC_AppendObjectLiteral(
 	if(pContainer)
 	{
 		pContainer->push_back(GetAstNode(e));
-		
+
 		return self;
 	}
 	return NULL;
@@ -1265,7 +1091,7 @@ AST_NODE_HANDLE IOC_CreatePropertyNameAndValue(
 
 	pPropertyNameAndValue->name(GetAstNode(name));
 	pPropertyNameAndValue->expression(GetAstNode(e));
-	
+
 	return GetAstHandle(pPropertyNameAndValue);
 }
 
@@ -1273,7 +1099,7 @@ AST_NODE_HANDLE IOC_CreateStringLiteral(
 	ioc_src_info *srcInfo,
 	pANTLR3_COMMON_TOKEN str
 ) {
-	ioc::StringLiteral* pStringLiteral = 
+	ioc::StringLiteral* pStringLiteral =
 		(ioc::StringLiteral*)ioc::AstFactory::createAstNode(IocAst_kStringLiteral);
 	AsignSrcinfoToNode(pStringLiteral,srcInfo);
 
@@ -1286,7 +1112,7 @@ AST_NODE_HANDLE IOC_CreateStringLiteral(
 	} else {
 		// ...
 	}
-	
+
 	return GetAstHandle(pStringLiteral);
 }
 
@@ -1295,7 +1121,7 @@ AST_NODE_HANDLE IOC_CreateNumberLiteral(
 	pANTLR3_COMMON_TOKEN num
 )
 {
-	ioc::NumberLiteral* pNumberLiteral = 
+	ioc::NumberLiteral* pNumberLiteral =
 		(ioc::NumberLiteral*)ioc::AstFactory::createAstNode(IocAst_kNumberLiteral);
 	AsignSrcinfoToNode(pNumberLiteral,srcInfo);
 	if (num) {
@@ -1314,7 +1140,7 @@ AST_NODE_HANDLE IOC_CreateNullLiteral(
 	ioc_src_info *srcInfo,
 	pANTLR3_COMMON_TOKEN str
 ) {
-	ioc::NullLiteral* pNullLiteral = 
+	ioc::NullLiteral* pNullLiteral =
 		(ioc::NullLiteral*)ioc::AstFactory::createAstNode(IocAst_kNullLiteral);
 	AsignSrcinfoToNode(pNullLiteral,srcInfo);
 
@@ -1334,7 +1160,7 @@ AST_NODE_HANDLE IOC_CreateBooleanLiteral(
 	ioc_src_info *srcInfo,
 	pANTLR3_COMMON_TOKEN str
 ) {
-	ioc::BooleanLiteral* pBooleanLiteral = 
+	ioc::BooleanLiteral* pBooleanLiteral =
 		(ioc::BooleanLiteral*)ioc::AstFactory::createAstNode(IocAst_kBooleanLiteral);
 	AsignSrcinfoToNode(pBooleanLiteral,srcInfo);
 
@@ -1347,7 +1173,7 @@ AST_NODE_HANDLE IOC_CreateBooleanLiteral(
 			pBooleanLiteral->setValue(false);
 		}
 	}
-	
+
 	return GetAstHandle(pBooleanLiteral);
 }
 

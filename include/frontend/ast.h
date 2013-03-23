@@ -174,18 +174,32 @@ class Expression;
 		/// @brief print node type name
 		virtual const std::string& printable_type_name () const = 0;
 
+		/// @brief 虚函数，用于维护属性信息。
+		virtual size_t attributeCount(void) const{
+		    return 0;
+		}
+		virtual bool  getAttribute(int idx,const char* &name,const char* &value)
+		{
+		    return false;
+		}
+		virtual bool  setAttribute(const char* name,const char* value)
+		{
+		    return false;
+		}
+
+
 		/// @brief 虚函数，用于返回孩子数量。
 		virtual	size_t childrenCount(void) const{
-			return 0;
+		    return 0;
 		}
 		/// @brief 虚函数，用于返回孩子的指针。
 		virtual AstNode*	getChildren(size_t idx) const{
-			return NULL;
+		    return NULL;
 		}
 
 		virtual	AstNode* createNode()
 		{
-			return NULL;
+		    return NULL;
 		}
 
 		/// @brief 用于深度克隆一个相同节点(含子节点)。
@@ -721,6 +735,34 @@ class Expression;
 
 		inline const std::string& name(void) const { return m_name; }
 		void name(const std::string &str) { m_name = str; }
+
+		virtual size_t attributeCount(void) const{
+		    return 1;
+		}
+		virtual bool  getAttribute(int idx,const char* &name,const char* &value)
+		{
+		    bool bGetOK = false;
+		    switch(idx)
+		    {
+		    case 0:
+		      name = sv_name_name;
+		      value = m_name.c_str();
+		      bGetOK = true;
+		      break;
+		    }
+		    return bGetOK;
+		}
+		virtual bool  setAttribute(const char* name,const char* value)
+		{
+		    bool bSetOK = false;
+		    if(strcmp(name,sv_name_name) == 0)
+		    {
+		       m_name = value;
+		       bSetOK = true;
+		    }
+		    return bSetOK;
+		}
+
 	protected:
 		virtual	void	assignFrom(const AstNode* psrc)
 		{
@@ -732,6 +774,7 @@ class Expression;
 			Expression::assignFrom(psrc);
 		}
 	private:
+        static  const char* sv_name_name;
 		std::string m_name;
 		AstNode* m_expression;
 	};
@@ -916,6 +959,33 @@ class Expression;
 
 		inline const std::string& identifier(void) const { return m_identifier; }
 		inline void identifier(const std::string &i) { m_identifier = i; }
+
+		virtual size_t attributeCount(void) const{
+		    return 1;
+		}
+		virtual bool  getAttribute(int idx,const char* &name,const char* &value)
+		{
+		    bool bGetOK = false;
+		    switch(idx)
+		    {
+		    case 0:
+		      name = sv_identifier_name;
+		      value = m_identifier.c_str();
+		      bGetOK = true;
+		      break;
+		    }
+		    return bGetOK;
+		}
+		virtual bool  setAttribute(const char* name,const char* value)
+		{
+		    bool bSetOK = false;
+		    if(strcmp(name,sv_identifier_name) == 0)
+		    {
+		       m_identifier = value;
+		       bSetOK = true;
+		    }
+		    return bSetOK;
+		}
 	protected:
 		virtual	void	assignFrom(const AstNode* psrc)
 		{
@@ -928,6 +998,7 @@ class Expression;
 		}
 	private:
 		std::string m_identifier;
+		static const char* sv_identifier_name;
 	};
 
 	/**
@@ -948,7 +1019,34 @@ class Expression;
 		}
 		inline const std::string& identifier(void) const { return m_identifier; }
 		inline void identifier(const std::string &i) { m_identifier = i; }
-	protected:
+
+		virtual size_t attributeCount(void) const{
+		    return 1;
+		}
+		virtual bool  getAttribute(int idx,const char* &name,const char* &value)
+		{
+		    bool bGetOK = false;
+		    switch(idx)
+		    {
+		    case 0:
+		      name = sv_identifier_name;
+		      value = m_identifier.c_str();
+		      bGetOK = true;
+		      break;
+		    }
+		    return bGetOK;
+		}
+		virtual bool  setAttribute(const char* name,const char* value)
+		{
+		    bool bSetOK = false;
+		    if(strcmp(name,sv_identifier_name) == 0)
+		    {
+		       m_identifier = value;
+		       bSetOK = true;
+		    }
+		    return bSetOK;
+		}
+
 		virtual	void	assignFrom(const AstNode* psrc)
 		{
 			const BreakStatement*	pBreakStatement = psrc->AsBreakStatement();
@@ -960,6 +1058,7 @@ class Expression;
 		}
 	private:
 		std::string m_identifier;
+		static const char* sv_identifier_name;
 	};
 
 	/**
@@ -1040,6 +1139,33 @@ class Expression;
 			}
 		}
 
+		virtual size_t attributeCount(void) const{
+		    return 1;
+		}
+		virtual bool  getAttribute(int idx,const char* &name,const char* &value)
+		{
+		    bool bGetOK = false;
+		    switch(idx)
+		    {
+		    case 0:
+		      name = sv_identifier_name;
+		      value = m_identifier.c_str();
+		      bGetOK = true;
+		      break;
+		    }
+		    return bGetOK;
+		}
+		virtual bool  setAttribute(const char* name,const char* value)
+		{
+		    bool bSetOK = false;
+		    if(strcmp(name,sv_identifier_name) == 0)
+		    {
+		       m_identifier = value;
+		       bSetOK = true;
+		    }
+		    return bSetOK;
+		}
+
 		inline const std::string& identifier(void)const { return m_identifier; }
 		inline void identifier(const std::string &i){ m_identifier = i; }
 
@@ -1056,6 +1182,7 @@ class Expression;
 			Statement::assignFrom(psrc);
 		}
 	private:
+		static const char* sv_identifier_name;
 		std::string m_identifier;//节点名称
 		AstNode* m_statement;//孩子节点指针
 	};
@@ -1516,8 +1643,8 @@ class Expression;
 	public:
 		Assignment(void) : m_operator(T_INVALID)
 		{
-            m_left = NULL;
-            m_right = NULL;
+		  m_left = NULL;
+		  m_right = NULL;
 		}
 
 		/// @brief assignment operation token
@@ -1589,17 +1716,41 @@ class Expression;
 		/// @brief Set a node pointer to the right child
 		inline void right(AstNode* r) { m_right = r; }
 
-		/// @brief Get the operator of node.
+		/// @brief Get the operator of node.(NOT SETTER MEMBER).
 		inline char operater(void) const { return m_operator; }
-		/// @brief Set the operator of node.
-		inline void operater(char o) { m_operator = o; }
 
 
 		/// @brief Get the operator string of node.
 		inline const std::string& opName(void) const { return opName_; }
 		/// @brief Set the operator string of node.
-		inline void opName(std::string name) { opName_ = name; }
+		void opName(const std::string &name);
 
+		virtual size_t attributeCount(void) const{
+		    return 1;
+		}
+		virtual bool  getAttribute(int idx,const char* &name,const char* &value)
+		{
+		    bool bGetOK = false;
+		    switch(idx)
+		    {
+		    case 0:
+		      name = sv_operator_name;
+		      value = opName_.c_str();
+		      bGetOK = true;
+		      break;
+		    }
+		    return bGetOK;
+		}
+		virtual bool  setAttribute(const char* name,const char* value)
+		{
+		    bool bSetOK = false;
+		    if(strcmp(name,sv_operator_name) == 0)
+		    {
+		       opName(value);
+		       bSetOK = true;
+		    }
+		    return bSetOK;
+		}
 	protected:
 		virtual	void	assignFrom(const AstNode* psrc)
 		{
@@ -1623,6 +1774,8 @@ class Expression;
 
 		/// @brief the string of operator of node.
 		std::string opName_;
+
+		static const char* sv_operator_name;
 	};
 
 	/**
@@ -1689,6 +1842,33 @@ class Expression;
 		inline 	void	arguments(AstNode* a){
 			m_arguments = a;
 		}
+
+		virtual size_t attributeCount(void) const{
+		    return 1;
+		}
+		virtual bool  getAttribute(int idx,const char* &name,const char* &value)
+		{
+		    bool bGetOK = false;
+		    switch(idx)
+		    {
+		    case 0:
+		      name = sv_name_name;
+		      value = m_name.c_str();
+		      bGetOK = true;
+		      break;
+		    }
+		    return bGetOK;
+		}
+		virtual bool  setAttribute(const char* name,const char* value)
+		{
+		    bool bSetOK = false;
+		    if(strcmp(name,sv_name_name) == 0)
+		    {
+		       m_name = value;
+		       bSetOK = true;
+		    }
+		    return bSetOK;
+		}
 	protected:
 		virtual	void	assignFrom(const AstNode* psrc)
 		{
@@ -1719,6 +1899,10 @@ class Expression;
 		 * @brief Argument list of function
 		 **/
 		AstNode* m_arguments;
+
+        /** @brief attribute name.
+        **/
+		static const char* sv_name_name;
 	};
 
 	/**
@@ -1805,14 +1989,39 @@ class Expression;
 		inline void right(AstNode* r) { m_right = r; }
 
 		/// @brief ...
-		inline char operater(void) const { return m_operator; }
-		/// @brief ...
-		inline void operater(char o) { m_operator = o; }
+		inline int operater(void) const { return m_operator; }
 
 		/// @brief Get the operation name string.
 		inline const std::string& opName(void) const { return opName_; }
 		/// @brief Set the operation name string.
-		inline void opName(const std::string &name) { opName_ = name; }
+		void opName(const std::string &name);
+
+		virtual size_t attributeCount(void) const{
+		    return 1;
+		}
+		virtual bool  getAttribute(int idx,const char* &name,const char* &value)
+		{
+		    bool bGetOK = false;
+		    switch(idx)
+		    {
+		    case 0:
+		      name = sv_operater_name;
+		      value = opName_.c_str();
+		      bGetOK = true;
+		      break;
+		    }
+		    return bGetOK;
+		}
+		virtual bool  setAttribute(const char* name,const char* value)
+		{
+		    bool bSetOK = false;
+		    if(strcmp(name,sv_operater_name) == 0)
+		    {
+		       opName(value);
+		       bSetOK = true;
+		    }
+		    return bSetOK;
+		}
 	protected:
 		virtual	void	assignFrom(const AstNode* psrc)
 		{
@@ -1828,9 +2037,10 @@ class Expression;
 		/// @brief Save the op as a string, only for debug when printing AST.
 		std::string opName_;
 		/// @brief 上述枚举中的操作符等
-		char m_operator;
+		int  m_operator;
 		AstNode *m_left;
 		AstNode	*m_right;
+		static const char* sv_operater_name;
 	};
 
 	/**
@@ -1912,13 +2122,38 @@ class Expression;
 
 		/// @brief ...
 		inline char operater(void) const { return m_operator; }
-		/// @brief ...
-		inline void operater(char op) { m_operator = op; }
 
 		/// @brief Get the op name string.
 		inline const std::string& opName(void) const { return opName_; }
 		/// @brief Set the op name string.
-		inline void opName(const std::string &name) { opName_ = name; }
+		void opName(const std::string &name);
+
+		virtual size_t attributeCount(void) const{
+		    return 1;
+		}
+		virtual bool  getAttribute(int idx,const char* &name,const char* &value)
+		{
+		    bool bGetOK = false;
+		    switch(idx)
+		    {
+		    case 0:
+		      name = sv_operater_name;
+		      value = opName_.c_str();
+		      bGetOK = true;
+		      break;
+		    }
+		    return bGetOK;
+		}
+		virtual bool  setAttribute(const char* name,const char* value)
+		{
+		    bool bSetOK = false;
+		    if(strcmp(name,sv_operater_name) == 0)
+		    {
+		       opName(value);
+		       bSetOK = true;
+		    }
+		    return bSetOK;
+		}
 	protected:
 		virtual	void	assignFrom(const AstNode* psrc)
 		{
@@ -1942,6 +2177,9 @@ class Expression;
 
 		/// @brief 右操作数
 		AstNode	*m_right;
+
+		/// @brief 属性名。
+		static const char* sv_operater_name;
 	};
 
 	/**
@@ -1968,6 +2206,45 @@ class Expression;
 		///@brief Set this node as a declaration.
 		inline void isDeclaration(bool b) { m_is_declaration = b; }
 
+		virtual size_t attributeCount(void) const{
+		    return 2;
+		}
+		virtual bool  getAttribute(int idx,const char* &name,const char* &value)
+		{
+		    bool bGetOK = false;
+		    switch(idx)
+		    {
+		    case 0:
+		      name = sv_is_declar_name;
+		      value = m_is_declaration ? sv_true_value : sv_false_value;
+		      bGetOK = true;
+		      break;
+		    case 1:
+		      name = sv_identify_name;
+		      value = m_js_identifier.c_str();
+		      bGetOK = true;
+		      break;
+		    }
+		    return bGetOK;
+		}
+		virtual bool  setAttribute(const char* name,const char* value)
+		{
+		    bool bSetOK = false;
+		    if(strcmp(name,sv_is_declar_name) == 0)
+		    {
+		       if(strcmp(value,sv_false_value) == 0){
+                    m_is_declaration = false;
+		       }else{
+                    m_is_declaration = true;
+		       }
+		       bSetOK = true;
+		    }else if(strcmp(name,sv_identify_name) == 0)
+		    {
+			m_js_identifier = value;
+			bSetOK = true;
+		    }
+		    return bSetOK;
+		}
 	protected:
 		virtual	void	assignFrom(const AstNode* psrc)
 		{
@@ -1986,6 +2263,11 @@ class Expression;
 		std::string m_js_identifier;
 		/// @brief 只有当变量声明时为true。如：jsval a;/javal b = 1;
 		bool m_is_declaration;
+
+		static const char* sv_is_declar_name;
+		static const char* sv_identify_name;
+		static const char* sv_true_value;
+		static const char* sv_false_value;
 	};
 
 	/**
@@ -2000,6 +2282,33 @@ class Expression;
 		}
 		inline const std::string &str(void) const { return m_str; }
 		inline void str(const std::string &s) { m_str = s; }
+
+		virtual size_t attributeCount(void) const{
+		    return 1;
+		}
+		virtual bool  getAttribute(int idx,const char* &name,const char* &value)
+		{
+		    bool bGetOK = false;
+		    switch(idx)
+		    {
+		    case 0:
+		      name = sv_literal_name;
+		      value = m_str.c_str();
+		      bGetOK = true;
+		      break;
+		    }
+		    return bGetOK;
+		}
+		virtual bool  setAttribute(const char* name,const char* value)
+		{
+		    bool bSetOK = false;
+		    if(strcmp(name,sv_literal_name) == 0)
+		    {
+		       m_str = value;
+		       bSetOK = true;
+		    }
+		    return bSetOK;
+		}
 	protected:
 		virtual	void	assignFrom(const AstNode* psrc)
 		{
@@ -2013,6 +2322,8 @@ class Expression;
 	private:
 		//
 		std::string m_str;
+
+		static const char* sv_literal_name;
 	};
 
 	/**
@@ -2028,6 +2339,33 @@ class Expression;
 		}
 		inline const std::string& num(void) { return m_num; }
 		inline void num(const std::string &n) { m_num = n; }
+
+		virtual size_t attributeCount(void) const{
+		    return 1;
+		}
+		virtual bool  getAttribute(int idx,const char* &name,const char* &value)
+		{
+		    bool bGetOK = false;
+		    switch(idx)
+		    {
+		    case 0:
+		      name = sv_literal_name;
+		      value = m_num.c_str();
+		      bGetOK = true;
+		      break;
+		    }
+		    return bGetOK;
+		}
+		virtual bool  setAttribute(const char* name,const char* value)
+		{
+		    bool bSetOK = false;
+		    if(strcmp(name,sv_literal_name) == 0)
+		    {
+		       m_num = value;
+		       bSetOK = true;
+		    }
+		    return bSetOK;
+		}
 	protected:
 		virtual	void	assignFrom(const AstNode* psrc)
 		{
@@ -2040,6 +2378,7 @@ class Expression;
 		}
 	private:
 		std::string m_num;
+		static const char* sv_literal_name;
 	};
 
 	/**
@@ -2056,6 +2395,40 @@ class Expression;
 		}
 		void setValue(bool value) { m_isTrue = value;}
 		bool getValue(){return m_isTrue;}
+
+		virtual size_t attributeCount(void) const{
+		    return 1;
+		}
+		virtual bool  getAttribute(int idx,const char* &name,const char* &value)
+		{
+		    bool bGetOK = false;
+		    switch(idx)
+		    {
+		    case 0:
+		      name = sv_literal_name;
+		      value = m_isTrue ? sv_true_value : sv_false_value;
+		      bGetOK = true;
+		      break;
+		    }
+		    return bGetOK;
+		}
+		virtual bool  setAttribute(const char* name,const char* value)
+		{
+		    bool bSetOK = false;
+		    if(strcmp(name,sv_literal_name) == 0)
+		    {
+		       if(strcmp(value,sv_false_value) == 0)
+		       {
+			 m_isTrue = false;
+		       }else{
+			 m_isTrue = true;
+		       }
+		       bSetOK = true;
+		    }
+		    return bSetOK;
+		}
+		static inline const char* trueValue(){return sv_true_value;}
+		static inline const char* falseValue(){return sv_false_value;}
 	protected:
 		virtual	void	assignFrom(const AstNode* psrc)
 		{
@@ -2068,6 +2441,9 @@ class Expression;
 		}
 	private:
 		bool m_isTrue;
+		static const char* sv_literal_name;
+		static const char* sv_true_value;
+		static const char* sv_false_value;
 	};
 
 	/**
@@ -2084,6 +2460,32 @@ class Expression;
 		}
 		inline const std::string& value(){return m_value;}
 		inline void value(const std::string& t){m_value = t;}
+		virtual size_t attributeCount(void) const{
+		    return 1;
+		}
+		virtual bool  getAttribute(int idx,const char* &name,const char* &value)
+		{
+		    bool bGetOK = false;
+		    switch(idx)
+		    {
+		    case 0:
+		      name = sv_literal_name;
+		      value = m_value.c_str();
+		      bGetOK = true;
+		      break;
+		    }
+		    return bGetOK;
+		}
+		virtual bool  setAttribute(const char* name,const char* value)
+		{
+		    bool bSetOK = false;
+		    if(strcmp(name,sv_literal_name) == 0)
+		    {
+		       m_value = value;
+		       bSetOK = true;
+		    }
+		    return bSetOK;
+		}
 	protected:
 		virtual	void	assignFrom(const AstNode* psrc)
 		{
@@ -2096,6 +2498,8 @@ class Expression;
 		}
 	private:
 		std::string m_value;
+
+		static const char* sv_literal_name;
 	};
 
 	/**
@@ -2151,6 +2555,33 @@ class Expression;
 
 		inline AstNode*	body(void) const {return m_body;}
 		inline void body(AstNode* b) { m_body = b; }
+
+		virtual size_t attributeCount(void) const{
+		    return 1;
+		}
+		virtual bool  getAttribute(int idx,const char* &name,const char* &value)
+		{
+		    bool bGetOK = false;
+		    switch(idx)
+		    {
+		    case 0:
+		      name = sv_name_name;
+		      value = m_name.c_str();
+		      bGetOK = true;
+		      break;
+		    }
+		    return bGetOK;
+		}
+		virtual bool  setAttribute(const char* name,const char* value)
+		{
+		    bool bSetOK = false;
+		    if(strcmp(name,sv_name_name) == 0)
+		    {
+		       m_name = value;
+		       bSetOK = true;
+		    }
+		    return bSetOK;
+		}
 	protected:
 		virtual	void	assignFrom(const AstNode* psrc)
 		{
@@ -2166,6 +2597,8 @@ class Expression;
 		AstNode	*m_body;
 		///@brief the name of function.
 		std::string m_name;
+
+		static const char* sv_name_name;
 	};
 
 	/**
@@ -2210,6 +2643,33 @@ class Expression;
 		inline const std::string& name(void) const { return m_name; }
 		///@brief set the name of function.
 		inline void name(const std::string &str) { m_name = str; }
+
+		virtual size_t attributeCount(void) const{
+		    return 1;
+		}
+		virtual bool  getAttribute(int idx,const char* &name,const char* &value)
+		{
+		    bool bGetOK = false;
+		    switch(idx)
+		    {
+		    case 0:
+		      name = sv_name_name;
+		      value = m_name.c_str();
+		      bGetOK = true;
+		      break;
+		    }
+		    return bGetOK;
+		}
+		virtual bool  setAttribute(const char* name,const char* value)
+		{
+		    bool bSetOK = false;
+		    if(strcmp(name,sv_name_name) == 0)
+		    {
+		       m_name = value;
+		       bSetOK = true;
+		    }
+		    return bSetOK;
+		}
 	protected:
 		virtual	void	assignFrom(const AstNode* psrc)
 		{
@@ -2225,6 +2685,8 @@ class Expression;
 		AstNode	*m_param;
 		AstNode	*m_body;
 		std::string m_name;
+
+		static const char* sv_name_name;
 	};
 
 	/**
@@ -2253,10 +2715,10 @@ class Expression;
 			T_INVALID,
 			T_ADDADD,		// `++` //PRE_INC//POST_INC
 			T_SUBSUB,		// `--` //PRE_DEC//POST_DEC
-            T_PLUS,			// `+`
-            T_MINUS,		// `-`
-            T_TILDE,		// `~`
-            T_NOT,			// `!`
+			T_PLUS,			// `+`
+			T_MINUS,		// `-`
+			T_TILDE,		// `~`
+			T_NOT,			// `!`
 			K_DELETE,		// js delete keyword
 			K_VOID,			// js void keyword
 			K_TYPEOF		// js typeof keyword
@@ -2285,14 +2747,12 @@ class Expression;
 			}
 		}
 		/// @brief Get op
-		inline char operater(void) const { return m_operator; }
-		/// @brief Set op
-		inline void operater(char ch) { m_operator = ch; }
+		inline int operater(void) const { return m_operator; }
 
 		/// @brief Get the op name string.
 		inline const std::string& opName(void) const { return opName_; }
 		/// @brief Set the op name string.
-		inline void opName(const std::string &name) { opName_ = name; }
+		void opName(const std::string &name);
 
 		/// @brief ...
 		inline AstNode*	expression(void) const { return m_expression; }
@@ -2303,6 +2763,47 @@ class Expression;
 		inline bool isFrontOp(void) const { return m_isFrontOp; }
 		/// @brief Set the op as in front of expression.
 		inline void isFrontOp(bool isFront) { m_isFrontOp = isFront; }
+		
+		virtual size_t attributeCount(void) const{
+		    return 2;
+		}
+		virtual bool  getAttribute(int idx,const char* &name,const char* &value)
+		{
+		    bool bGetOK = false;
+		    switch(idx)
+		    {
+		    case 0:
+		      name = sv_operator_name;
+		      value = opName_.c_str();
+		      bGetOK = true;
+		      break;
+		    case 1:
+		      name = sv_isfront_name;
+		      value = m_isFrontOp ? BooleanLiteral::trueValue() : BooleanLiteral::falseValue();
+		      bGetOK = true;
+		      break;
+		    }
+		    return bGetOK;
+		}
+		virtual bool  setAttribute(const char* name,const char* value)
+		{
+		    bool bSetOK = false;
+		    if(strcmp(name,sv_operator_name) == 0)
+		    {
+		       opName(value);
+		       bSetOK = true;
+		    }else if(strcmp(name,sv_isfront_name) == 0)
+		    {
+		       if(strcmp(value,BooleanLiteral::trueValue()) == 0){
+			  m_isFrontOp = true;
+		       }else{
+			  m_isFrontOp = false;
+		       }
+			bSetOK = true;
+		    }
+		    return bSetOK;
+		}
+		
 	protected:
 		virtual	void	assignFrom(const AstNode* psrc)
 		{
@@ -2316,7 +2817,7 @@ class Expression;
 		}
 	private:
 		/// @brief 操作符标示，enum数据
-		char 	m_operator;
+		int 	m_operator;
 
 		/// @brief Save the op as a string, only for debug when printing AST.
 		std::string opName_;
@@ -2325,7 +2826,10 @@ class Expression;
 		AstNode	*m_expression;
 
 		/// @brief True, if "++i"; False if "i++".
-		bool m_isFrontOp;
+		bool 	m_isFrontOp;
+		
+		static const char* sv_operator_name;
+		static const char* sv_isfront_name;
 	};
 
 	/**
