@@ -21,8 +21,36 @@
 #include "utils/option.h"
 #include "utils/log.h"
 #include "frontend/parser.h"
+#include "frontend/astvisitor.h"
+#include "frontend/xmlwritevisit.h"
 #include <boost/shared_ptr.hpp>
 #include <stdio.h>
+
+#include "utils/modulepath.h"
+
+class visitorAAA : public ioc::AstVisitor{
+		int indent;
+	public:
+		visitorAAA(){
+			indent = 0;
+		}
+		virtual void beginTraversal(ioc::AstNode * node) {
+			for(int i = 0 ; i < indent * 4; i++)
+			{
+				std::cout << ' ';
+			}
+			std::cout << node->printable_type_name() << ":";
+			std::cout << node->childrenCount() << std::endl;
+			//ioc::Assignment *pAssignNode = node->AsAssignment();
+			//if(pAssignNode)
+			//{
+			//	ioc::AstNode* pLeft = pAssignNode->left();
+			//	ioc::AstNode* pRight = pAssignNode->right();
+			//}
+			indent++;
+		}
+		virtual void endTraversal(ioc::AstNode * node) {	indent--;}
+	};
 
 
 int main(int argc,const char * argv[])
@@ -31,7 +59,7 @@ int main(int argc,const char * argv[])
 	if(!ioc::utils::Option::instance().initFromArgs(argc,argv))
 		return 0;
 
-	std::string source("source");
+	std::string source("system.source");
 	if(ioc::utils::Option::instance().is_existed(source))
 	{
 		std::vector<std::string> srcset = ioc::utils::Option::instance().get<std::vector<std::string>>(source);
@@ -42,7 +70,40 @@ int main(int argc,const char * argv[])
 
 			boost::shared_ptr<ioc::frontend::Parser> pParser;
 			pParser.reset(new ioc::frontend::Parser());
-			pParser->parser(*it);
+			if(pParser->parser(*it))
+			{
+                if(ioc::utils::Option::instance().is_existed("system.genxml"))
+				{
+					std::string	key("system.output");
+					boost::filesystem::path	result;
+					if(ioc::utils::Option::instance().is_existed(key))
+					{//system.output is exist.use it.
+						boost::filesystem::path	p(ioc::utils::Option::instance().get<std::string>(key));
+						if(p.is_absolute())
+						{
+							result = p;
+						}else{
+							result = ioc::utils::ModulePath::instance().initPath();
+							result /= p;
+						}
+					}else{//use current input file.
+						boost::filesystem::path	p(*it);
+						if(p.is_absolute())
+						{
+							result = p;
+						}else{
+							result = ioc::utils::ModulePath::instance().initPath();
+							result /= p;
+						}
+						result.replace_extension("xml");
+
+					}
+					ioc::XmlWriteVisit  visit;
+					visit.WriteTo(pParser->getRootAst(),result.generic_string());
+				}
+				visitorAAA	v;
+				v.apply(pParser->getRootAst());
+			}
 
 			it++;
 		}

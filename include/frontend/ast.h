@@ -16,22 +16,22 @@
 //                                                                        //
 //  IOC website: http://www.masols.com                                    //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 #ifndef  IOC_FRONTEND_AST_H
 #define  IOC_FRONTEND_AST_H
- 
+
 
 /**
  * @file        ast.h
  * @brief       抽象语法树是一个轻量级的ioc中间表达形式。负责对上层语言做隔离，以便可以最终编译为本地代码。
- * 				所有的节点都在一个独立的隔离空间分配，这允许我们快速分配并以常数时间销毁全部语法数。 
+ * 				所有的节点都在一个独立的隔离空间分配，这允许我们快速分配并以常数时间销毁全部语法数。
  * @relate      测试程序ast_test.cpp
  **/
 /**
  * @defgroup varSurvival
  **/
 
- 
+
 #include "utils/zone.h"
 #include "utils/exception.h"
 #include "frontend/asttypes.h"
@@ -110,7 +110,7 @@ class Expression;
 		{																	   \
 			this->assignFrom(&ref);											   \
 		}
-		
+
 
 ///@brief A node, his child count can be changed, needs this macro body.
 #define AST_CONTAINER_NODE_REQUIRED_HEADER									\
@@ -148,20 +148,21 @@ class Expression;
 		{																	\
 			m_container.clear();											\
 		}
-		
+
 	/*ioc ast 基类 */
 	class AstNode: public ZoneObject {
 	protected:
 		friend class AstVisitor;
-		/// @brief 实现了通用的遍历方法。派生类可以以类似方式实现Traversal并根据AstVisitor的类型重定向到AstNode的不同方法上去——比如codegen.
-		//virtual void Traversal(AstVisitor* v);
+		/// @brief 实现了通用的遍历方法。
+		/// @details 派生类可以以类似方式实现Traversal并根据AstVisitor的类型重定向到AstNode的不同方法上去——比如codegen.
+		virtual void Traversal(AstVisitor* v);
 
-		AstNode(int l,int c,const std::string& filename) : 
+		AstNode(int l,int c,const std::string& filename) :
 			id_(GetNextId()),
 			line_(l), column_(c),sourceName_(filename)
 		{
 		}
-		AstNode() : 
+		AstNode() :
 			id_(GetNextId()),
 			line_(-1), column_(-1)
 		{
@@ -169,10 +170,10 @@ class Expression;
 	public:
 	    //virtual void Traversal(AstVisitor* v, int num);
 		virtual ~AstNode() {}
-		
+
 		/// @brief print node type name
 		virtual const std::string& printable_type_name () const = 0;
-		
+
 		/// @brief 虚函数，用于返回孩子数量。
 		virtual	size_t childrenCount(void) const{
 			return 0;
@@ -182,42 +183,42 @@ class Expression;
 			return NULL;
 		}
 
-		virtual	AstNode* createNode()		
-		{									
+		virtual	AstNode* createNode()
+		{
 			return NULL;
-		}									
+		}
 
 		/// @brief 用于深度克隆一个相同节点(含子节点)。
 		AstNode* clone()
-		{                                                                   
+		{
 			AstNode	*pRet = this->createNode();
-			pRet->assignFrom(this);			
+			pRet->assignFrom(this);
 			size_t i;
-			for(i = 0; i < this->childrenCount(); i++)                      
-			{                                                               
-				if(this->getChildren(i))                                    
-				{                                                           
-					pRet->setChildren(i, this->getChildren(i)->clone());   
-				}                                                           
-				else                                                        
-				{                                                           
-					pRet->setChildren(i, NULL);                            
-				}                                                           
-			}                                                               
-			return pRet;                                                   
+			for(i = 0; i < this->childrenCount(); i++)
+			{
+				if(this->getChildren(i))
+				{
+					pRet->setChildren(i, this->getChildren(i)->clone());
+				}
+				else
+				{
+					pRet->setChildren(i, NULL);
+				}
+			}
+			return pRet;
 		}
-		
+
 		virtual void	setChildren(size_t idx,AstNode* node) {}
 		virtual void	push_back(AstNode* next){}
 		virtual void	pop_back(){}
 		virtual void	insert(AstNode* tmp){}
-		virtual void	insert(ZoneVector<AstNode*>::iterator start,					
+		virtual void	insert(ZoneVector<AstNode*>::iterator start,
 					ZoneVector<AstNode*>::iterator end ){}
 		virtual void	clear(){}
-		
+
 		/// @brief 派生类需要重载这个方法，并返回正确的类型。这由宏AST_DECLARE_REQUIRED_HEADER自动实现。
 		virtual IOCASTTYPES node_type() const { return IocAst_kInvalid; }
-		
+
 		// Type testing & conversion functions overridden by concrete subclasses.
 		// 缺省返回NULL，允许子类只派生As自己类型()返回reinterpret_cast后的指针就可以了。这由宏AST_DECLARE_REQUIRED_HEADER自动实现。
 		#define DECLARE_NODE_FUNCTIONS(type)                  \
@@ -226,42 +227,42 @@ class Expression;
 
 		  AST_NODE_LIST(DECLARE_NODE_FUNCTIONS)
 		#undef DECLARE_NODE_FUNCTIONS
-		
+
 		unsigned id() const { return id_; }
 		static void ResetIds() { current_id_ = 0; }
 		/**********************************************************************
 		 * Debug support info
 		 *********************************************************************/
-		
+
 		inline int line(void) const
 		{
 			return line_;
 		}
-		
+
 		inline int pos(void) const
 		{
 			return column_;
 		}
-		
+
 		inline void line(int line)
 		{
 			line_ = line;
 		}
-		
+
 		inline void pos(int col)
 		{
 			column_ = col;
 		}
-		
+
 		/**
 		 * @brief get source file name
-		 * @return 
+		 * @return
 		 **/
 		inline const std::string& getSourceName(void) const
 		{
 			return sourceName_;
 		}
-		
+
 		/**
 		 * @brief set souce file name
 		 * @param name
@@ -279,7 +280,7 @@ class Expression;
 			current_id_ += n;
 			return tmp;
 		}
-		
+
 		virtual	void	assignFrom(const AstNode* psrc)
 		{
 			if(!psrc)
@@ -327,7 +328,7 @@ class Expression;
 		WithStatement() :
 			m_expression(NULL), m_statement(NULL) {
 		}
-		
+
 		virtual	size_t childrenCount(void) const{
 			return 2;
 		}
@@ -341,7 +342,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		/// @brief 虚函数，用于给孩子赋值。
 		virtual void setChildren(size_t idx, AstNode * node)
 		{
@@ -357,7 +358,7 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		inline AstNode*	expression(void)const {return m_expression;}
 		inline 	void	expression(AstNode* e){
 			m_expression = e;
@@ -410,7 +411,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		/// @brief 虚函数，用于给孩子赋值。
 		virtual void setChildren(size_t idx, AstNode * node)
 		{
@@ -426,7 +427,7 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		inline AstNode* expression(void)const {return m_expression;}
 		inline void expression(AstNode* e){
 			m_expression = e;
@@ -460,7 +461,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		/// @brief 虚函数，用于给孩子赋值。
 		virtual void setChildren(size_t idx, AstNode * node)
 		{
@@ -473,7 +474,7 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		inline AstNode* statement(void)const {return m_statement;}
 		inline void statement(AstNode* s){
 			m_statement = s;
@@ -509,7 +510,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		/// @brief 虚函数，用于给孩子赋值。
 		virtual void setChildren(size_t idx, AstNode * node)
 		{
@@ -528,7 +529,7 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		inline AstNode* init(void)const {return m_init;}
 		inline void init(AstNode* i){
 			m_init = i;
@@ -572,7 +573,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		/// @brief 虚函数，用于给孩子赋值。
 		virtual void setChildren(size_t idx, AstNode * node)
 		{
@@ -588,7 +589,7 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		inline AstNode*	expression(void)const {return m_expression;}
 		inline 	void	expression(AstNode* e){
 			m_expression = e;
@@ -635,7 +636,7 @@ class Expression;
 		IndexSuffix(void) :
 			m_expression(NULL) {
 		}
-		
+
 		virtual	size_t childrenCount(void) const{
 			return 1;
 		}
@@ -649,7 +650,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		/// @brief 虚函数，用于给孩子赋值。
 		virtual void setChildren(size_t idx, AstNode * node)
 		{
@@ -662,7 +663,7 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		inline AstNode*	expression(void)const {return m_expression;}
 		inline 	void	expression(AstNode* e){
 			m_expression = e;
@@ -685,7 +686,7 @@ class Expression;
 			m_expression(NULL)
 		{
 		}
-		
+
 		virtual	size_t childrenCount(void) const{
 			return 1;
 		}
@@ -699,7 +700,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		/// @brief 虚函数，用于给孩子赋值。
 		virtual void setChildren(size_t idx, AstNode * node)
 		{
@@ -712,12 +713,12 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		inline AstNode*	expression(void)const {return m_expression;}
 		inline 	void	expression(AstNode* e){
 			m_expression = e;
 		}
-		
+
 		inline const std::string& name(void) const { return m_name; }
 		void name(const std::string &str) { m_name = str; }
 	protected:
@@ -741,13 +742,13 @@ class Expression;
 	class Conditional : public Expression{
 		/// @brief conditional expression
 		AstNode * condition_;
-		
+
 		/// @brief expression when value is true.
 		AstNode * valueIfTrue_;
-		
+
 		/// @brief expression when value is false.
 		AstNode * valueIfFalse_;
-		
+
 		AST_DECLARE_REQUIRED_HEADER(Conditional)
 	public:
 		Conditional(void) :
@@ -770,7 +771,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		/// @brief 虚函数，用于给孩子赋值。
 		virtual void setChildren(size_t idx, AstNode * node)
 		{
@@ -789,25 +790,25 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		/// @brief get the conditional expression.
 		inline AstNode*	condition(void) const { return condition_; }
-		
+
 		/// @brief get the expression if true.
 		inline AstNode*	valueIfTrue(void) const { return valueIfTrue_; }
-		
+
 		/// @brief get the expression if false.
 		inline AstNode*	valueIfFalse(void) const { return valueIfFalse_; }
-		
+
 		/// @brief get the conditional expression.
 		inline void condition(AstNode* e) { condition_ = e; }
-		
+
 		/// @brief set the expression if true.
 		inline void valueIfTrue(AstNode* e) { valueIfTrue_ = e; }
-		
+
 		/// @brief set the expression if false.
 		inline void valueIfFalse(AstNode* e) { valueIfFalse_ = e; }
-		
+
 	};
 
 	/**
@@ -879,7 +880,7 @@ class Expression;
 	class SourceElements : public AstNode{
 		AST_DECLARE_REQUIRED_HEADER(SourceElements)
 		AST_CONTAINER_NODE_REQUIRED_HEADER
-	public: 
+	public:
 		SourceElements()
 		{
 		}
@@ -912,7 +913,7 @@ class Expression;
 		virtual AstNode* getChildren(size_t idx) const{
 			return NULL;
 		}
-		
+
 		inline const std::string& identifier(void) const { return m_identifier; }
 		inline void identifier(const std::string &i) { m_identifier = i; }
 	protected:
@@ -924,7 +925,7 @@ class Expression;
 				this->m_identifier = pContinueStatement->m_identifier;
 			}
 			Statement::assignFrom(psrc);
-		}	
+		}
 	private:
 		std::string m_identifier;
 	};
@@ -956,7 +957,7 @@ class Expression;
 				this->m_identifier = pBreakStatement->m_identifier;
 			}
 			Statement::assignFrom(psrc);
-		}	
+		}
 	private:
 		std::string m_identifier;
 	};
@@ -964,7 +965,7 @@ class Expression;
 	/**
 	 * @brief The return statement.
 	 * @details JavaScript Example: "return i=1;"
-	 **/	
+	 **/
 	class ReturnStatement: public Statement {
 		AST_DECLARE_REQUIRED_HEADER(ReturnStatement)
 	public:
@@ -983,7 +984,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		virtual void	setChildren(size_t idx,AstNode* node){
 			switch(idx){
 			case 0:
@@ -993,7 +994,7 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		inline AstNode*	expression(void)const {return m_expression;}
 		inline 	void	expression(AstNode* i){
 			m_expression = i;
@@ -1013,7 +1014,7 @@ class Expression;
 			m_statement(NULL)
 		{
 		}
-		
+
 		virtual	size_t childrenCount(void) const{
 			return 1;
 		}
@@ -1025,7 +1026,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		/// @brief 虚函数，用于给孩子赋值。
 		virtual void setChildren(size_t idx, AstNode * node)
 		{
@@ -1083,7 +1084,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		/// @brief 虚函数，用于给孩子赋值。
 		virtual void setChildren(size_t idx, AstNode * node)
 		{
@@ -1099,7 +1100,7 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		inline AstNode*	expression(void)const {return m_expression;}
 		inline 	void	expression(AstNode* e){
 			m_expression = e;
@@ -1149,7 +1150,7 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		inline AstNode* body(void)const {return m_body;}
 		inline void body(AstNode* d){
 			m_body = d;
@@ -1198,7 +1199,7 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		inline AstNode* condition(void)const {return m_condition;}
 		inline void condition(AstNode* c){
 			m_condition = c;
@@ -1307,7 +1308,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		/// @brief 虚函数，用于给孩子赋值。
 		virtual void setChildren(size_t idx, AstNode * node)
 		{
@@ -1326,7 +1327,7 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		inline AstNode* statement(void)const {return m_statement;}
 		inline void statement(AstNode* s){
 			m_statement = s;
@@ -1368,7 +1369,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		/// @brief 虚函数，用于给孩子赋值。
 		virtual void setChildren(size_t idx, AstNode * node)
 		{
@@ -1384,7 +1385,7 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		inline AstNode* init(void)const {return m_identifier;}
 		inline void init(AstNode* i){
 			m_identifier = i;
@@ -1419,7 +1420,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		/// @brief 虚函数，用于给孩子赋值。
 		virtual void setChildren(size_t idx, AstNode * node)
 		{
@@ -1432,7 +1433,7 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		inline AstNode* statement(void)const {return m_statement;}
 		inline void statement(AstNode* s){
 			m_statement = s;
@@ -1454,7 +1455,7 @@ class Expression;
 		virtual	size_t childrenCount(void) const{
 			return 3;
 		}
-		
+
 		virtual AstNode*	getChildren(size_t idx) const{
 			switch(idx)
 			{
@@ -1467,7 +1468,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		virtual void	setChildren(size_t idx,AstNode* node){
 			switch(idx){
 			case 0:
@@ -1516,7 +1517,7 @@ class Expression;
 		Assignment(void) :
 			m_operator(T_INVALID), m_left(NULL), m_right(NULL){
 		}
-		
+
 		/// @brief assignment operation token
 		/// @details about shift op:
 		/// wikipedia:Arithmetic_shift
@@ -1542,12 +1543,12 @@ class Expression;
 		{
 			return m_operator;
 		}
-		
+
 		virtual	size_t childrenCount(void) const
 		{
 			return 2;
 		}
-		
+
 		/// @brief 虚函数，用于返回孩子的指针。
 		virtual AstNode* getChildren(size_t idx) const
 		{
@@ -1561,7 +1562,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		virtual void setChildren(size_t idx, AstNode* node)
 		{
 			switch(idx) {
@@ -1580,18 +1581,18 @@ class Expression;
 		inline AstNode*	left(void) const { return m_left; }
 		/// @brief Set a node pointer to the left child
 		inline void left(AstNode* l) { m_left = l; }
-		
+
 		/// @brief Get the right child.
 		inline AstNode*	right(void) const { return m_right; }
 		/// @brief Set a node pointer to the right child
 		inline void right(AstNode* r) { m_right = r; }
-		
+
 		/// @brief Get the operator of node.
 		inline char operater(void) const { return m_operator; }
 		/// @brief Set the operator of node.
 		inline void operater(char o) { m_operator = o; }
-		
-		
+
+
 		/// @brief Get the operator string of node.
 		inline const std::string& opName(void) const { return opName_; }
 		/// @brief Set the operator string of node.
@@ -1611,13 +1612,13 @@ class Expression;
 	private:
 		/// @brief 左孩子
 		AstNode* m_left;
-		
+
 		/// @brief 右孩子
 		AstNode* m_right;
-		
+
 		/// @brief 上述枚举中的操作符EQU等
 		char m_operator;
-		
+
 		/// @brief the string of operator of node.
 		std::string opName_;
 	};
@@ -1653,7 +1654,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		/// @brief 虚函数，用于给孩子赋值。
 		virtual void setChildren(size_t idx, AstNode * node)
 		{
@@ -1669,7 +1670,7 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		/// @brief Give you the name of the function which you are calling.
 		inline const std::string& name(void) const { return m_name; }
 		/// @brief Give me the function name.
@@ -1741,11 +1742,11 @@ class Expression;
 		typedef	Expression inherit;
 		AST_DECLARE_REQUIRED_HEADER(CompareOperation)
 	public:
-		CompareOperation() : 
+		CompareOperation() :
 			m_operator(T_INVALID), m_left(NULL), m_right(NULL)
 		{
 		}
-		
+
 		enum{
 			T_INVALID,
 			T_LT,				// `<`
@@ -1760,7 +1761,7 @@ class Expression;
 			T_IN,				// `in` js only
 			T_INIT              //':'
 		};
-		
+
 		virtual	size_t childrenCount(void) const{
 			return 2;
 		}
@@ -1777,7 +1778,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		virtual void	setChildren(size_t idx,AstNode* node){
 			switch(idx){
 			case 0:
@@ -1790,22 +1791,22 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		/// @brief ...
 		inline AstNode*	left(void)const {return m_left;}
 		/// @brief ...
 		inline void left(AstNode* l) { m_left = l; }
-		
+
 		/// @brief ...
 		inline AstNode*	right(void)const {return m_right;}
 		/// @brief ...
 		inline void right(AstNode* r) { m_right = r; }
-		
+
 		/// @brief ...
 		inline char operater(void) const { return m_operator; }
 		/// @brief ...
 		inline void operater(char o) { m_operator = o; }
-		
+
 		/// @brief Get the operation name string.
 		inline const std::string& opName(void) const { return opName_; }
 		/// @brief Set the operation name string.
@@ -1841,7 +1842,7 @@ class Expression;
 		typedef	Expression inherit;
 		AST_DECLARE_REQUIRED_HEADER(BinaryOperation)
 	public:
-		BinaryOperation() : 
+		BinaryOperation() :
 			m_operator(T_INVALID), m_left(NULL), m_right(NULL)
 		{
 		}
@@ -1883,7 +1884,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		virtual void	setChildren(size_t idx,AstNode* node){
 			switch(idx){
 			case 0:
@@ -1896,22 +1897,22 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		/// @brief ...
 		inline AstNode*	left(void)const {return m_left;}
 		/// @brief ...
 		inline void left(AstNode* l) { m_left = l; }
-		
+
 		/// @brief ...
 		inline AstNode*	right(void)const {return m_right;}
 		/// @brief ...
 		inline void right(AstNode* r) { m_right = r; }
-		
+
 		/// @brief ...
 		inline char operater(void) const { return m_operator; }
 		/// @brief ...
 		inline void operater(char op) { m_operator = op; }
-		
+
 		/// @brief Get the op name string.
 		inline const std::string& opName(void) const { return opName_; }
 		/// @brief Set the op name string.
@@ -1930,13 +1931,13 @@ class Expression;
 	private:
 		/// @brief 二元操作符标示 enum数据
 		int m_operator;
-		
+
 		/// @brief Save the op as a string, only for debug when printing AST.
 		std::string opName_;
 
 		/// @brief 左操作数
 		AstNode *m_left;
-		
+
 		/// @brief 右操作数
 		AstNode	*m_right;
 	};
@@ -1954,17 +1955,17 @@ class Expression;
 		/**
 		 * Get Action
 		 **/
-		
+
 		///@brief Get the name string of variable.
 		inline const std::string& js_identifier(void) const { return m_js_identifier; }
 		///@brief Set the name string of variable.
 		inline void js_identifier(const std::string &i) { m_js_identifier = i; }
-		
+
 		///@brief Check if this node is a declaration.
 		inline bool isDeclaration(void) const { return m_is_declaration; }
 		///@brief Set this node as a declaration.
 		inline void isDeclaration(bool b) { m_is_declaration = b; }
-		
+
 	protected:
 		virtual	void	assignFrom(const AstNode* psrc)
 		{
@@ -2008,7 +2009,7 @@ class Expression;
 			inherit::assignFrom(psrc);
 		}
 	private:
-		// 
+		//
 		std::string m_str;
 	};
 
@@ -2062,7 +2063,7 @@ class Expression;
 				this->m_isTrue = pBooleanLiteral->m_isTrue;
 			}
 			inherit::assignFrom(psrc);
-		}		
+		}
 	private:
 		bool m_isTrue;
 	};
@@ -2092,7 +2093,7 @@ class Expression;
 			inherit::assignFrom(psrc);
 		}
 	private:
-		std::string m_value;		
+		std::string m_value;
 	};
 
 	/**
@@ -2103,14 +2104,14 @@ class Expression;
 		typedef Statement inherit;
 		AST_DECLARE_REQUIRED_HEADER(FunctionDeclaration)
 	public:
-		FunctionDeclaration() : 
+		FunctionDeclaration() :
 			m_param(NULL), m_body(NULL)
 		{
 		}
-		
+
 		virtual	size_t childrenCount(void) const{
 			return 2;
-		} 
+		}
 		virtual AstNode*	getChildren(size_t idx) const{
 			switch(idx)
 			{
@@ -2121,7 +2122,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		/// @brief 虚函数，用于给孩子赋值。
 		virtual void setChildren(size_t idx, AstNode * node)
 		{
@@ -2137,12 +2138,12 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		///@brief get the function name string.
 		inline const std::string& name(void) const { return m_name; }
 		///@brief set the name of function.
 		inline void name(const std::string &str) { m_name = str; }
-		
+
 		inline AstNode*	param(void) const {return m_param;}
 		inline void param(AstNode* p) { m_param = p; }
 
@@ -2174,11 +2175,11 @@ class Expression;
 		typedef	Statement	inherit;
 		AST_DECLARE_REQUIRED_HEADER(FunctionExpression)
 	public:
-		FunctionExpression() : 
+		FunctionExpression() :
 			m_param(NULL), m_body(NULL)
 		{
 		}
-		
+
 		virtual	size_t childrenCount(void) const{
 			return 2;
 		}
@@ -2192,7 +2193,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		inline AstNode*	param(void)const {return m_param;}
 		inline 	void	param(AstNode* p){
 			m_param = p;
@@ -2202,7 +2203,7 @@ class Expression;
 		inline	void	body(AstNode* b){
 			m_body = b;
 		}
-		
+
 		///@brief get the function name string.
 		inline const std::string& name(void) const { return m_name; }
 		///@brief set the name of function.
@@ -2241,11 +2242,11 @@ class Expression;
 		typedef	Expression	inherit;
 		AST_DECLARE_REQUIRED_HEADER(UnaryOperation)
 	public:
-		UnaryOperation() : 
+		UnaryOperation() :
 			m_operator(T_INVALID), m_expression(NULL),m_isFrontOp(false)
 		{
 		}
-		
+
 		enum{
 			T_INVALID,
 			T_ADDADD,		// `++` //PRE_INC//POST_INC
@@ -2270,7 +2271,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		/// @brief 虚函数，用于给孩子赋值。
 		virtual void setChildren(size_t idx, AstNode* node){
 			switch(idx){
@@ -2285,7 +2286,7 @@ class Expression;
 		inline char operater(void) const { return m_operator; }
 		/// @brief Set op
 		inline void operater(char ch) { m_operator = ch; }
-		
+
 		/// @brief Get the op name string.
 		inline const std::string& opName(void) const { return opName_; }
 		/// @brief Set the op name string.
@@ -2295,7 +2296,7 @@ class Expression;
 		inline AstNode*	expression(void) const { return m_expression; }
 		/// @brief ...
 		inline void expression(AstNode* e) { m_expression = e; }
-		
+
 		/// @brief The op is in front of expression or not.
 		inline bool isFrontOp(void) const { return m_isFrontOp; }
 		/// @brief Set the op as in front of expression.
@@ -2317,10 +2318,10 @@ class Expression;
 
 		/// @brief Save the op as a string, only for debug when printing AST.
 		std::string opName_;
-		
+
 		/// @brief 一元运算孩子节点
 		AstNode	*m_expression;
-		
+
 		/// @brief True, if "++i"; False if "i++".
 		bool m_isFrontOp;
 	};
@@ -2334,7 +2335,7 @@ class Expression;
 		AST_DECLARE_REQUIRED_HEADER(Throw)
 	public:
 		Throw() : m_expression(NULL) {}
-		
+
 		virtual	size_t childrenCount(void) const{
 			return 1;
 		}
@@ -2346,7 +2347,7 @@ class Expression;
 			}
 			return NULL;
 		}
-		
+
 		/// @brief 虚函数，用于给孩子赋值。
 		virtual void setChildren(size_t idx, AstNode * node)
 		{
@@ -2359,7 +2360,7 @@ class Expression;
 				break;
 			}
 		}
-		
+
 		inline AstNode*	expression(void)const {return m_expression;}
 		inline 	void	expression(AstNode* e){
 			m_expression = e;

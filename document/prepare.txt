@@ -6,15 +6,21 @@ boost & boost.log
 1. download boost and boost.log(andysem version: http://sourceforge.net/projects/boost-log/ )
 2. see http://stackoverflow.com/questions/13285714/boost-log-installation-error-on-boost-1-52-0 to patch boost.log
 2. build option : {{{
-     b2 variant=release link=static runtime-link=shared address-model=64
+     ./b2 variant=release link=static runtime-link=shared address-model=64
+	 sudo ./b2 install
    }}}
-   
+
 antlr & antlr C target:
-1. download antlr and antlr source from http://www.antlr3.org/download.html.
+1. download antlr c runtime from http://www.antlr3.org/download/C/.
 2. see https://github.com/antlr/antlr/issues/4 to remove antlr c target file.
 3. compile c target.
 4. use antlr3.2.jar to compiler grammar.3.3-3.5 has bug,need patch.
 
 cppunit:
 1. download from http://sourceforge.net/projects/cppunit/
-   
+2. run {{{
+  export LIBS=-ldl
+  ./configure
+  make
+  sudo make install
+  }}}

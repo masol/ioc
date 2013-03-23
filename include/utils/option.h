@@ -71,9 +71,9 @@ namespace ioc { namespace utils
         typedef boost::property_tree::basic_ptree<std::string, boost::any> ptree_any;
         typedef boost::property_tree::basic_ptree<std::string, slottype> ptree_slot;
 
-    protected:
-        ptree_any m_ptree;                          /**<属性树 */
-        ptree_slot m_slots;                         /**<slottype表 */
+	protected:
+        ptree_any	m_ptree;                          /**<属性树 */
+        ptree_slot	m_slots;                         /**<slottype表 */
 
 #ifndef IOC_NOTHREAD_SAFE
         //我们只需要一个锁，这增加了潜在的锁定等待时间。但是option应该不会成为hotspot. 

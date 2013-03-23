@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "utils/option.h"
+#include "utils/modulepath.h"
 #include <boost/program_options.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/filesystem.hpp>
@@ -42,10 +43,12 @@ static inline void		outUsage(void){
 static inline void		initOption_descritpion(boost::program_options::options_description &cmdline,boost::program_options::options_description &generic)
 {
 	cmdline.add_options()
-		("help,h", "print help message")
-		("version,v", "print version information")
-		("config,c", boost::program_options::value<std::string>(),"specify config file")
-		("source,s", boost::program_options::value<std::string>(),"specify source file")
+		("help,h", "Display this information.")
+		("version,v", "Display  version informationl.")
+		("genxml,x", "Generate the ast(xml) file.")
+		("config,c", boost::program_options::value<std::string>(),"Specify config file.")
+		("source,s", boost::program_options::value<std::string>(),"Specify source file.")
+		("output,o", boost::program_options::value<std::string>(),"Place the output into <file>.")
 		;
 
 //all property begin with log treat with log config,pass it to log.
@@ -62,8 +65,19 @@ static inline void		initOption_descritpion(boost::program_options::options_descr
 //		;
 }
 
-static inline bool loadConfigFile(const std::string &cfgFile,boost::program_options::options_description &cmdline_options,boost::program_options::parsed_options &option,std::vector<std::string> &sources,std::stringstream &log_cfg);
-static	bool	parser_Option(boost::program_options::options_description &cmdline_options,boost::program_options::parsed_options &option,std::vector<std::string> &sources,std::stringstream &log_cfg)
+struct  parser_context{
+    boost::program_options::options_description     &cmdline_options;
+    std::vector<std::string>                      sources;
+    std::stringstream                               log_cfg;
+    bool                                            genxml;
+    std::string                                     outfile;
+    parser_context(boost::program_options::options_description &clo) : cmdline_options(clo),genxml(false)
+    {
+    }
+};
+
+static inline bool loadConfigFile(const std::string &cfgFile,parser_context &ctx);
+static	bool	parser_Option(boost::program_options::parsed_options &option,parser_context &ctx)
 {
 	bool bNeedQuit = false;
 	std::vector< boost::program_options::option>::iterator	it = option.options.begin();
@@ -77,19 +91,19 @@ static	bool	parser_Option(boost::program_options::options_description &cmdline_o
 			//TODO: more flexible mechanism to extend config.
 			if(it->string_key.compare(0, log_tag.length(), log_tag) == 0)
 			{
-				log_cfg << it->string_key.substr(log_tag.length()) << "=";
+				ctx.log_cfg << it->string_key.substr(log_tag.length()) << "=";
 				std::vector< std::string>::iterator	value_it = it->value.begin();
 				while(value_it != it->value.end() )
 				{
-					log_cfg << *value_it;
+					ctx.log_cfg << *value_it;
 					value_it++;
 				}
-				log_cfg << std::endl;
+				ctx.log_cfg << std::endl;
 			}else{
 				outCopyRights();
 				std::cout << "invalid parameter " << it->string_key << std::endl;
 				outUsage();
-				std::cout << cmdline_options << std::endl;
+				std::cout << ctx.cmdline_options << std::endl;
 				bNeedQuit = true;
 				break;
 			}
@@ -126,7 +140,7 @@ static	bool	parser_Option(boost::program_options::options_description &cmdline_o
 		{
 			outCopyRights();
 			outUsage();
-			std::cout << cmdline_options << std::endl;
+			std::cout << ctx.cmdline_options << std::endl;
 			bNeedQuit = true;
 			break;
 		}else if(it->string_key == "version")
@@ -140,12 +154,19 @@ static	bool	parser_Option(boost::program_options::options_description &cmdline_o
 			std::vector<std::string>::iterator value_it = it->value.begin();
 			while(value_it != it->value.end())
 			{
-				if(std::find(sources.begin(),sources.end(),*value_it) == sources.end())
+				if(std::find(ctx.sources.begin(),ctx.sources.end(),*value_it) == ctx.sources.end())
 				{
-					sources.push_back(*value_it);
+					ctx.sources.push_back(*value_it);
 				}
 				value_it++;
 			}
+		}else if(it->string_key == "genxml")
+		{
+            ctx.genxml = true;
+		}else if(it->string_key == "output")
+		{
+		    if(it->value.size() > 0)
+                ctx.outfile = *(it->value.begin());
 		}
 		it++;
 	}
@@ -156,7 +177,7 @@ static	bool	parser_Option(boost::program_options::options_description &cmdline_o
 		std::vector<std::string>::iterator cfgit = configFile.begin();
 		while(cfgit != configFile.end())
 		{
-			if(loadConfigFile(*cfgit,cmdline_options,option,sources,log_cfg))
+			if(loadConfigFile(*cfgit,ctx))
 			{
 				bNeedQuit = true;
 				break;
@@ -168,7 +189,7 @@ static	bool	parser_Option(boost::program_options::options_description &cmdline_o
 	return bNeedQuit;
 }
 
-static inline bool loadConfigFile(const std::string &cfgFile,boost::program_options::options_description &cmdline_options,boost::program_options::parsed_options &option,std::vector<std::string> &sources,std::stringstream &log_cfg)
+static inline bool loadConfigFile(const std::string &cfgFile,parser_context &ctx)
 {
 	std::ifstream	input(cfgFile.c_str(),std::ios_base::in);
 	BOOST_SCOPE_EXIT( (&input))
@@ -180,8 +201,8 @@ static inline bool loadConfigFile(const std::string &cfgFile,boost::program_opti
 	if(input.is_open())
 	{
 		std::cout << "loading config file " << cfgFile << " ...";
-		boost::program_options::parsed_options po = boost::program_options::parse_config_file(input,cmdline_options,true);
-		bNeedQuit = parser_Option(cmdline_options,po,sources,log_cfg);
+		boost::program_options::parsed_options po = boost::program_options::parse_config_file(input,ctx.cmdline_options,true);
+		bNeedQuit = parser_Option(po,ctx);
 		std::cout << "done!" << std::endl;
 	}else{
 		outCopyRights();
@@ -197,7 +218,7 @@ Option::initFromArgs(int argc,const char* argv[])
 {
 	boost::program_options::options_description		cmdline;
 	boost::program_options::options_description		generic;
-	
+
 	initOption_descritpion(cmdline,generic);
 
 	bool	bNeedQuit = false;
@@ -208,25 +229,33 @@ Option::initFromArgs(int argc,const char* argv[])
 	p.add("source", -1);
 	boost::program_options::parsed_options po = boost::program_options::command_line_parser(argc,argv).options(cmdline_options).positional(p).allow_unregistered().run();
 
-	std::stringstream			log_cfg;
-	std::vector<std::string>	sources;
-	bNeedQuit = parser_Option(cmdline_options,po,sources,log_cfg);
+	parser_context      ctx(cmdline_options);
+	bNeedQuit = parser_Option(po,ctx);
 	if(!bNeedQuit)
 	{//system runing, set the source and config log system.
-		if(sources.size())
+		if(ctx.sources.size())
 		{
-			this->put("source",sources);
+			this->put("system.source",ctx.sources);
 		}
-		if(log_cfg.tellp() > 0)
+		if(ctx.genxml)
+        {
+            this->put("system.genxml",true);
+        }
+        if(ctx.outfile.length())
+        {
+            this->put("system.output",ctx.outfile);
+        }
+		//@todo : po only from command line,process it in config file.
+		if(ctx.log_cfg.tellp() > 0)
 		{
-			std::cout << "log_cfg : " << log_cfg.str() << std::endl;
-			Log::instance().configuration(log_cfg);
+			std::cout << "log_cfg : " << ctx.log_cfg.str() << std::endl;
+			Log::instance().configuration(ctx.log_cfg);
 		}
+		ioc::utils::ModulePath::instance().initialize(argv[0]);
 	}
 
 	return !bNeedQuit;
 }
-
 
 }//utils
 }//ioc

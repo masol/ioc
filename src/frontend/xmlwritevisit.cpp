@@ -20,24 +20,43 @@
 
 #include "config.h"
 #include "frontend/ast.h"
-#include "frontend/astvisitor.h"
+#include "frontend/xmlwritevisit.h"
 
 
 namespace ioc{
 
-unsigned AstNode::current_id_ = 0;
-
-void AstNode::Traversal(AstVisitor* v)
+// if ofile not initionlizer, exception throwed.
+void
+XmlWriteVisit::beginTraversal(AstNode * node)
 {
-    v->internalBeginTraversal(this);
-    size_t childCount = this->childrenCount();
-    for(size_t i = 0; i <childCount; i++) {
-        AstNode* pNode = this->getChildren(i);
-        if(pNode) {
-            pNode->Traversal(v);
-        }
-    }
-    v->internalEndTraversal(this);
+    OutIndent();
+    m_ofstream << '<' << node->printable_type_name() << '>' << std::endl;
+    m_indent++;
 }
 
-} //end namespace ioc
+void
+XmlWriteVisit::endTraversal(AstNode * node)
+{
+    m_indent--;
+    OutIndent();
+    m_ofstream << "</" << node->printable_type_name() << '>' << std::endl;
+}
+
+bool
+XmlWriteVisit::WriteTo(AstNode *proot,const std::string &f)
+{
+    if(proot)
+    {
+		m_ofstream.open(f.c_str());
+        if(m_ofstream.is_open())
+        {
+            m_ofstream << "<?xml version=\"1.0\" encoding=\"utf-8\"?>" << std::endl;
+            this->apply(proot);
+            return true;
+        }
+    }
+    return false;
+}
+
+
+} //end namespace ioc.

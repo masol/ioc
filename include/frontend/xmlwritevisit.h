@@ -17,27 +17,45 @@
 //  IOC website: http://www.masols.com                                    //
 ////////////////////////////////////////////////////////////////////////////
 
+#ifndef  IOC_FRONTEND_ASTWRITEVISIT_H
+#define  IOC_FRONTEND_ASTWRITEVISIT_H
 
-#include "config.h"
-#include "frontend/ast.h"
+/**
+ * @file     xmlwritevisit.h
+ * @brief    遍历ast以生成xml文件。
+ **/
+
 #include "frontend/astvisitor.h"
-
+#include <fstream>
 
 namespace ioc{
 
-unsigned AstNode::current_id_ = 0;
-
-void AstNode::Traversal(AstVisitor* v)
+class XmlWriteVisit : public AstVisitor
 {
-    v->internalBeginTraversal(this);
-    size_t childCount = this->childrenCount();
-    for(size_t i = 0; i <childCount; i++) {
-        AstNode* pNode = this->getChildren(i);
-        if(pNode) {
-            pNode->Traversal(v);
+private:
+    virtual void    beginTraversal(AstNode * node);
+    virtual void    endTraversal(AstNode * node);
+    std::ofstream   m_ofstream;
+    int              m_indent;
+    inline  void    OutIndent(void){
+        for(int i = 0 ; i < m_indent; i++)
+        {
+            this->m_ofstream << "    ";
         }
     }
-    v->internalEndTraversal(this);
-}
+public:
+    XmlWriteVisit() : m_indent(0)
+    {
+    }
+    ~XmlWriteVisit()
+    {
+        if(m_ofstream.is_open())
+            m_ofstream.close();
+    }
+    //@todo encoding process.
+    bool   WriteTo(AstNode *proot,const std::string &f);
+};
 
-} //end namespace ioc
+} //end namespace ioc.
+
+#endif	//IOC_FRONTEND_ASTWRITEVISIT_H

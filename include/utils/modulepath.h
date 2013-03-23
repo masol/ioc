@@ -46,7 +46,7 @@ namespace utils{
 		 **/
 		inline void initialize(const char* modulePath){
 			m_modulePath = boost::filesystem::path(modulePath);
-			m_moduleName = m_modulePath.filename();
+			m_moduleName = m_modulePath.generic_string();
 			m_modulePath = boost::filesystem::ioc_ext::resolve_sym(m_modulePath);
 			m_modulePath = m_modulePath.parent_path();
 		}

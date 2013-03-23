@@ -17,27 +17,15 @@
 //  IOC website: http://www.masols.com                                    //
 ////////////////////////////////////////////////////////////////////////////
 
-
 #include "config.h"
 #include "frontend/ast.h"
 #include "frontend/astvisitor.h"
 
-
 namespace ioc{
 
-unsigned AstNode::current_id_ = 0;
-
-void AstNode::Traversal(AstVisitor* v)
-{
-    v->internalBeginTraversal(this);
-    size_t childCount = this->childrenCount();
-    for(size_t i = 0; i <childCount; i++) {
-        AstNode* pNode = this->getChildren(i);
-        if(pNode) {
-            pNode->Traversal(v);
-        }
-    }
-    v->internalEndTraversal(this);
+void AstVisitor::apply(AstNode *root){
+    m_currentPath.resize(0);
+    root->Traversal(this);
 }
 
-} //end namespace ioc
+}//end namespace ioc
