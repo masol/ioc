@@ -39,4 +39,9 @@ set(TEST_CASE_SRCS
 include_directories(${CPPUNIT_INCLUDE_DIR})
 add_executable(ioc_test ${TEST_BASE_SRCS} ${TEST_CASE_SRCS})
 
+if(WIN32)
 TARGET_LINK_LIBRARIES(ioc_test utils ${CPPUNIT_LIBRARIES})
+else(WIN32)
+message(STATUS "${Boost_LIBRARIES}")
+TARGET_LINK_LIBRARIES(ioc_test utils ${CPPUNIT_LIBRARIES} ${Boost_LIBRARIES})
+endif(WIN32)

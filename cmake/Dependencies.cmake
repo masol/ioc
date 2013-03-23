@@ -37,7 +37,7 @@ set(Boost_MINIMUM_VERSION       "1.44.0")
 
 set(Boost_ADDITIONAL_VERSIONS "1.53.0" "1.47.0" "1.46.1" "1.46" "1.46.0" "1.45" "1.45.0" "1.44" "1.44.0")
 
-set(IOC_BOOST_COMPONENTS thread filesystem system)
+set(IOC_BOOST_COMPONENTS log thread filesystem system program_options regex)
 find_package(Boost ${Boost_MINIMUM_VERSION} COMPONENTS ${IOC_BOOST_COMPONENTS})
 if (NOT Boost_FOUND)
         # Try again with the other type of libs
