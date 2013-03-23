@@ -57,7 +57,7 @@ namespace ioc{ namespace utils
 
         resetToEmpty();
         std::string  line; //current line.
-    
+
         //首先收集信息，按照Sink的名称建立Hash-map。
         //如果hash-map有效，则清空当前Sink配置。
         //然后根据这一Hash-map创建和配置Sink。
@@ -74,7 +74,6 @@ namespace ioc{ namespace utils
             boost::cmatch result;
             if(boost::regex_match(line.c_str(),result,Sink))
             {
-                const std::string &tmp = result[1].str();
                 type_props::iterator it = propmap.find(result[1].str());
                 if(it != propmap.end())
                 {
@@ -205,7 +204,7 @@ namespace ioc{ namespace utils
 #endif
 
                 try{
-                    
+
                     if(!result[2].str().empty())
                     {
                         unsigned short day = boost::lexical_cast<unsigned short>(result[2].str());
@@ -221,7 +220,7 @@ namespace ioc{ namespace utils
 
                     unsigned char minute = boost::lexical_cast<unsigned char>(result[4].str());
                     if(minute >= 0 && hour <= 59)
-                        tsi.m_rotation_time.m_minute= minute; 
+                        tsi.m_rotation_time.m_minute= minute;
 
                     unsigned char sec =boost::lexical_cast<unsigned char>(result[5].str());
                     if(sec >= 0 && sec <= 59)

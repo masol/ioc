@@ -55,7 +55,7 @@ namespace ioc { namespace utils
         {
             ACT_NULL = 0,
             ACT_PUT,
-            ACT_ERASE,
+            ACT_ERASE
         };
         typedef enum Act_Type Act_Type;
 
@@ -76,7 +76,7 @@ namespace ioc { namespace utils
         ptree_slot	m_slots;                         /**<slottype表 */
 
 #ifndef IOC_NOTHREAD_SAFE
-        //我们只需要一个锁，这增加了潜在的锁定等待时间。但是option应该不会成为hotspot. 
+        //我们只需要一个锁，这增加了潜在的锁定等待时间。但是option应该不会成为hotspot.
         //因此，一个锁的策略其粒度应该足够了。
         boost::shared_mutex m_mutex;        /**<mutex for m_ptree */
 #endif //IOC_NOTHREAD_SAFE
@@ -101,12 +101,12 @@ namespace ioc { namespace utils
         template<typename Type>
         Type get(const std::string& path)
         {
-#ifndef IOC_NOTHREAD_SAFE			
+#ifndef IOC_NOTHREAD_SAFE
             boost::shared_lock<boost::shared_mutex> l(m_mutex);
 #endif
             return boost::any_cast<Type>( m_ptree.get<boost::any>(path) );
         }
-        
+
 
 
         /**
@@ -180,7 +180,7 @@ namespace ioc { namespace utils
          * @brief           设置一个属性值
          * @param path      [IN],属性的路径
          * @param value     [IN],属性的值
-         * @exception       put失败，throw ptree_error 
+         * @exception       put失败，throw ptree_error
          **/
         template<typename Type>
         void put(const std::string& path, const Type & value)
@@ -192,7 +192,7 @@ namespace ioc { namespace utils
 #endif
                 slot = m_slots.get_optional<slottype>(path);
             }
-            
+
             bool bPutValue = true;
             boost::any value_any = value;
             /*如果有监视函数，则调用监视函数 */
@@ -234,9 +234,9 @@ namespace ioc { namespace utils
             /**其他异常往上抛 */
         }
 
-        
-        /** 
-         * @brief           删除一个属性，并删除该属性对应的监视函数          
+
+        /**
+         * @brief           删除一个属性，并删除该属性对应的监视函数
          **/
         void erase(const std::string & path)
         {

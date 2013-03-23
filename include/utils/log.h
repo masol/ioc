@@ -36,7 +36,7 @@
 #include <boost/log/utility/init/to_console.hpp>
 #include <boost/bind.hpp>
 #include <boost/optional.hpp>
-#include <boost/regex.hpp> 
+#include <boost/regex.hpp>
 //本头文件也被configuration所使用。
 #include <boost/thread/mutex.hpp>
 //#endif
@@ -82,13 +82,13 @@ namespace ioc { namespace utils
                 NOTICE = IOC_LOG_SEV_NOTICE,
                 WARN = IOC_LOG_SEV_WARN,
                 _ERROR = IOC_LOG_SEV_ERROR, // 在windows下ERROR是关键字
-                EMERG = IOC_LOG_SEV_EMERG,
+                EMERG = IOC_LOG_SEV_EMERG
             };
 
 	private:
 			//TODO we need support thread under IOC__OS_SOLARIS. see [ticket:63#comment:1]
             typedef boost::log::sources::severity_logger_mt<SEVERITY_LEVEL> blog_source_type;
-		
+
 
             /**缺省的日志最低级别 */
             static const SEVERITY_LEVEL DEFAULT_LEVEL = WARN;
@@ -140,7 +140,7 @@ namespace ioc { namespace utils
             {
                 std::ostream & m_strm;              /**<console's stream */
                 SEVERITY_LEVEL  m_level;            /**<最底的日志级别 */
-                ConsSinkInfo(std::ostream &strm, 
+                ConsSinkInfo(std::ostream &strm,
                     SEVERITY_LEVEL level=DEFAULT_LEVEL):m_strm(strm),
                     m_level(level){}
             };
@@ -160,13 +160,13 @@ namespace ioc { namespace utils
                 return m_lgs;
             }
 
-            
+
             /**
              * @brief           配置日志信息
              * @param stm       [IN], 输入流，通过读取流信息对日志进行配置
              **/
             void configuration(std::istream &stm);
-            
+
             ~Log(){}
             //}}}对外接口 end
 
@@ -220,7 +220,7 @@ namespace ioc { namespace utils
             const char * MinLevel()     {return "minlevel";}
             const char * ConsStream()   {return "stream";}
             //}}}
-            
+
             //{{{配置信息中一些预定义好的属性值
 
             //Destination 属性可能的值
@@ -236,7 +236,7 @@ namespace ioc { namespace utils
             //{{{私有成员 begin
             blog_source_type        m_lgs;          /**<日志源 */
             std::list<sinktype>     m_sinklist;
-			
+
             mutable boost::shared_mutex m_mutex;
 
             Log() : m_lgs(WARN)
@@ -251,7 +251,7 @@ namespace ioc { namespace utils
 
 
 /** @brief helper macro to use ioc log.
- * 
+ *
 **/
 #define IOC_LOG()             BOOST_LOG(ioc::utils::Log::instance().blog())
 #define IOC_LOG_SEV(sev)      BOOST_LOG_SEV(ioc::utils::Log::instance().blog(),ioc::utils::Log::sev)

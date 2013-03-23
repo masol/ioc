@@ -23,9 +23,9 @@
 /**
  * @file        parser.h
  * @brief       作为语言分析前端的接口。所有语言前端实现此接口。。
- * @relate      
+ * @relate
  **/
- 
+
 #include	"utils/zone.h"
 #include 	"frontend/ast.h"
 
@@ -56,19 +56,24 @@ namespace frontend{
 		 *  @return true表示分析成功。可以调用getRootAst获取分析结果。
 		 */
 		virtual bool	parser(const std::string&);
-		
-		
+
+         /** @brief 分析指定的数据缓冲区。每次分析会把所有结果重置。
+		 *  @return true表示分析成功。可以调用getRootAst获取分析结果。
+		 */
+		virtual bool	parser(const char* buf,int size,const char* name = NULL);
+
+
 		/** @brief 成功，获取Ast根节点。返回的AST对象在Parser对象被销毁时自动销毁。
 		 */
 		virtual ioc::AstNode* getRootAst(void)const
 		{
 			return m_root;
 		}
-		
+
 		/** @brief 如果分析失败，获取失败的错误描述。
 		 */
 		virtual bool	getErrorMessage(std::string& message)const;
-		
+
 		/* @brief 如果分析失败，获取失败的行数。-1表示无法获取.
 		 */
 		int 	getErrorLineNumber(void)const{
@@ -86,7 +91,7 @@ namespace frontend{
 		}
 
 	};
-	
+
 }//namespace frontend.
 }//namespace ioc
 

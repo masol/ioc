@@ -1514,8 +1514,10 @@ class Expression;
 	class Assignment : public AstNode{
 		AST_DECLARE_REQUIRED_HEADER(Assignment)
 	public:
-		Assignment(void) :
-			m_operator(T_INVALID), m_left(NULL), m_right(NULL){
+		Assignment(void) : m_operator(T_INVALID)
+		{
+            m_left = NULL;
+            m_right = NULL;
 		}
 
 		/// @brief assignment operation token
@@ -1617,7 +1619,7 @@ class Expression;
 		AstNode* m_right;
 
 		/// @brief 上述枚举中的操作符EQU等
-		char m_operator;
+		int m_operator;
 
 		/// @brief the string of operator of node.
 		std::string opName_;

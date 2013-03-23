@@ -34,9 +34,9 @@ static	ioc::AstNode* ParserStream(pANTLR3_INPUT_STREAM i_input)
 		ptr = NULL;	\
 	}
 
-    pjavascriptLexer			    	i_lxr;
-    pANTLR3_COMMON_TOKEN_STREAM	    	i_tstream;
-    pjavascriptParser			    	i_psr;
+    pjavascriptLexer			    	i_lxr = NULL;
+    pANTLR3_COMMON_TOKEN_STREAM	    	i_tstream = NULL;
+    pjavascriptParser			    	i_psr = NULL;
 
 	ioc::AstNode *pRet = NULL;
 	do{
@@ -129,6 +129,13 @@ bool	Parser::parser(const std::string &fname)
 	m_root = ParserFile(fname);
 	return (m_root!= NULL);
 }
+
+bool	Parser::parser(const char* buf,int size,const char* name)
+{
+    m_root = ParserContent(buf,size,name);
+    return (m_root != NULL);
+}
+
 
 bool	Parser::getErrorMessage(std::string& message)const
 {
