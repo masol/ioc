@@ -36,6 +36,16 @@ ADD_CUSTOM_COMMAND(
     DEPENDS "${IOC_SOURCE_DIR}/src/frontend/javascript.g"
 )
 ELSE(WIN32)
+ADD_CUSTOM_COMMAND(
+	OUTPUT ${IOC_ANTLR_OUTPUT}
+	# Creating custom doxygen-ioc.conf
+	COMMAND mkdir -p "${IOC_ANTLR_OUTPUT_DIR}"
+	COMMAND cp "${IOC_SOURCE_DIR}/src/frontend/javascript.g" "${IOC_ANTLR_OUTPUT_DIR}/javascript.g"
+	COMMAND cd  "${IOC_ANTLR_OUTPUT_DIR}"
+	COMMAND "${Java_JAVA_EXECUTABLE}" -cp "${ANTLR_JAR_PATH}" org.antlr.Tool javascript.g
+	WORKING_DIRECTORY "${IOC_ANTLR_OUTPUT_DIR}"
+    DEPENDS "${IOC_SOURCE_DIR}/src/frontend/javascript.g"
+)
 ENDIF(WIN32)
 
 ADD_CUSTOM_COMMAND(

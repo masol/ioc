@@ -82,4 +82,16 @@ set(IOC_SRCS
 
 add_executable(ioc ${IOC_SRCS})
 
+IF (WIN32)
 TARGET_LINK_LIBRARIES(ioc utils frontend ${ANTLR_LIBRARIES})
+ELSE(WIN32)
+TARGET_LINK_LIBRARIES(ioc
+  utils
+  frontend
+  ${ANTLR_LIBRARIES} 
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}
+  ${Boost_LIBRARIES}
+)
+ENDIF(WIN32)

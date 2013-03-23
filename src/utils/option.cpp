@@ -25,6 +25,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/scope_exit.hpp>
 #include "utils/log.h"
+#include <fstream>
 
 
 namespace ioc { namespace utils {

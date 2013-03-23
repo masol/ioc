@@ -62,7 +62,7 @@ int main(int argc,const char * argv[])
 	std::string source("system.source");
 	if(ioc::utils::Option::instance().is_existed(source))
 	{
-		std::vector<std::string> srcset = ioc::utils::Option::instance().get<std::vector<std::string>>(source);
+		std::vector<std::string> srcset = ioc::utils::Option::instance().get<std::vector<std::string> >(source);
 		std::vector<std::string>::iterator it = srcset.begin();
 		while(it != srcset.end())
 		{

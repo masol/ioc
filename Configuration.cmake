@@ -43,7 +43,7 @@ IF (NOT IOC_NO_DEFAULT_CONFIG)
 
     IF(MSVC)
 
-	  STRING(REGEX MATCH "(Win64)" _carch_x64 ${CMAKE_GENERATOR})
+      STRING(REGEX MATCH "(Win64)" _carch_x64 ${CMAKE_GENERATOR})
       IF(_carch_x64)
         SET(WINDOWS_ARCH "x64")
       ELSE(_carch_x64)
@@ -51,27 +51,33 @@ IF (NOT IOC_NO_DEFAULT_CONFIG)
       ENDIF(_carch_x64)
       MESSAGE(STATUS "Building for target ${WINDOWS_ARCH}")
 	  
-	  SET(MSVC_RT_DEBUG_FIX 1)
+      SET(MSVC_RT_DEBUG_FIX 1)
 
     ELSE(MSVC)
 
     ENDIF(MSVC)
 
     IF(DEFINED ENV{IOC_DEP_DIRS})
-	  SET(IOC_DEP_DIRS $ENV{IOC_DEP_DIRS})
-	  MESSAGE(STATUS "ioc build environment variables found")
-      SET(BOOST_SEARCH_PATH         "${IOC_DEP_DIRS}/boost_1_53_0")
-#	  SET(V8_SEARCH_PATH        	"${IOC_DEP_DIRS}/v8")
-	  SET(Java_JAVA_EXECUTABLE    	"C:\\Program Files\\Java\\jre7\\bin\\java.exe")
-#	  SET(ANTLR_JAR_PATH    	"${IOC_DEP_DIRS}/javalib/antlr-3.4-complete.jar")
-	  SET(ANTLR_JAR_PATH    	"${IOC_DEP_DIRS}/javalib/antlr-3.2.jar")
-	ENDIF(DEFINED ENV{IOC_DEP_DIRS})
-	
+	SET(IOC_DEP_DIRS $ENV{IOC_DEP_DIRS})
+	MESSAGE(STATUS "ioc build environment variables found")
+	SET(BOOST_SEARCH_PATH         "${IOC_DEP_DIRS}/boost_1_53_0")
+	SET(Java_JAVA_EXECUTABLE    	"C:\\Program Files\\Java\\jre7\\bin\\java.exe")
+#	SET(ANTLR_JAR_PATH    	"${IOC_DEP_DIRS}/javalib/antlr-3.4-complete.jar")
+	SET(ANTLR_JAR_PATH    	"${IOC_DEP_DIRS}/javalib/antlr-3.2.jar")
+    ENDIF(DEFINED ENV{IOC_DEP_DIRS})
+
+  ELSE(WIN32)
+    IF(DEFINED ENV{IOC_DEP_DIRS})
+	SET(IOC_DEP_DIRS $ENV{IOC_DEP_DIRS})
+	MESSAGE(STATUS "ioc build environment variables found")
+	SET(Java_JAVA_EXECUTABLE    	"/usr/bin/java")
+	SET(ANTLR_JAR_PATH    	"${IOC_DEP_DIRS}/javalib/antlr-3.2.jar")
+    ENDIF(DEFINED ENV{IOC_DEP_DIRS})
   ENDIF(WIN32)
 
 ELSE(NOT IOC_NO_DEFAULT_CONFIG)
 	
-	MESSAGE(STATUS "IOC_NO_DEFAULT_CONFIG defined - not using default configuration values.")
+  MESSAGE(STATUS "IOC_NO_DEFAULT_CONFIG defined - not using default configuration values.")
 
 ENDIF(NOT IOC_NO_DEFAULT_CONFIG)
 
