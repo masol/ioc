@@ -63,6 +63,8 @@ find_package(Antlr)
 
 find_package(CppUnit)
 
+find_package(PythonInterp)
+
 #set(WITH_V8                  "${V8_SEARCH_PATH}")
 #find_package(V8)
 #if (V8_FOUND)

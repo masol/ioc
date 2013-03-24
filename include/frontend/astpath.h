@@ -16,7 +16,7 @@
 //                                                                        //
 //  IOC website: http://www.masols.com                                    //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 #ifndef  IOC_FRONTEND_ASTPATH_H
 #define  IOC_FRONTEND_ASTPATH_H
 
@@ -29,9 +29,9 @@
 #include <vector>
 
 namespace ioc{
-	
+
 	class AstNode;
-	
+
 	/**
 	 * @brief 可以把AstPath当作标准STL中的vector<AstNode*>来用，只不过增加了几个便利方法，并且结合zone分配策略不再减少尺寸——zone本身不会释放内存。
 	 */
@@ -61,15 +61,15 @@ namespace ioc{
 		AstPath(AstNode *head) : m_depth(0){
 			append(head);
 		}
-		
+
 		AstPath(const AstPath & rhs) : inherited(rhs) , m_depth(rhs.m_depth) {}
 		AstPath & operator=(const AstPath & rhs){
 			*dynamic_cast<inherited*>(this) = rhs;
 			m_depth = rhs.m_depth;
 			return *this;
 		}
-		
-		
+
+
 		void setHead(AstNode * head){
 			if(inherited::size()){
 				inherited::at(0) = head;
@@ -78,11 +78,11 @@ namespace ioc{
 				m_depth++;
 			}
 		}
-		
+
 		inline size_type	size() const{
 			return m_depth;
 		}
-		
+
 		void append(AstNode * node){
 			if(inherited::size() > m_depth)
 			{
@@ -92,7 +92,7 @@ namespace ioc{
 				m_depth++;
 			}
 		}
-		
+
 		void append(const AstPath &frompath){
 			if( frompath.size() + size() > inherited::size() )
 			{
@@ -100,11 +100,11 @@ namespace ioc{
 			}
 			std::copy(frompath.begin(),frompath.begin() + frompath.size(),inherited::begin() + size());
 		}
-		
+
 		inline void push(AstNode * node){
 			append(node);
 		}
-		
+
 		void resize(size_type __new_size, value_type __x = value_type())
 		{
 			if(__new_size > inherited::size())
@@ -115,11 +115,11 @@ namespace ioc{
 				m_depth = __new_size;
 			}
 		}
-		
+
 		void pop(void){
 			m_depth--;
 		}
-		
+
 		iterator end()
 		{ return inherited::begin() + size();}
 
@@ -130,12 +130,12 @@ namespace ioc{
 		{
 			return inherited::size() ? inherited::at(0) : NULL;
 		}
-		
+
 		AstNode * getTail(void) const
 		{
 			return inherited::size() ? inherited::at(m_depth - 1) : NULL;
 		}
-		
+
 		AstNode * getNode(const int index) const{
 			return (index < (int)m_depth) ? inherited::at(index) : NULL;
 		}
@@ -144,7 +144,7 @@ namespace ioc{
 		}
 
 	};
-	
+
 } //end namespace ioc.
 
 #endif //IOC_FRONTEND_ASTPATH_H

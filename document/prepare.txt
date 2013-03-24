@@ -24,3 +24,7 @@ cppunit:
   make
   sudo make install
   }}}
+
+
+llvm(ioc use llvm library and llvm lit test suite)
+1. download llvm from llvm.org

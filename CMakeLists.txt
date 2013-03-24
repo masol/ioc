@@ -25,6 +25,7 @@ MESSAGE(STATUS "CMAKE VERSION DETECTED " ${CMAKE_VERSION})
 #
 ###########################################################################
 # Fresh start
+# we use copy internal macro -- this is supported by cmake 2.8.
 cmake_minimum_required(VERSION 2.8)
 cmake_policy(VERSION 2.8)
 #Remove the following when the version check is at least 2.8.4
@@ -112,6 +113,13 @@ if (NOT CPPUNIT_FOUND)
 else()
 	MESSAGE(STATUS "CppUnit found,building Test.")
 	add_subdirectory(test/cppunit)
+endif()
+
+if (NOT PYTHONINTERP_FOUND)
+	MESSAGE(STATUS "Python not found, ignore python based test.")
+else()
+	MESSAGE(STATUS "Python found,building python based test.")
+	add_subdirectory(test/astchecker)
 endif()
 
 ###########################################################################

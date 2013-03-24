@@ -1,0 +1,4 @@
+@echo off
+
+@LLVM_LIT_PATH@ @IOC_ASTCHECKER_TEST_PATH@
+pause

@@ -24,7 +24,7 @@
 # Use cmake "-DIOC_CUSTOM_CONFIG=YouFileCName" To define your personal settings
 # where YouFileCName.cname must exist in one of the cmake include directories
 # best to use cmake/SpecializedConfig/
-# 
+#
 # To not load defaults before loading custom values define
 # -DIOC_NO_DEFAULT_CONFIG=true
 #
@@ -50,7 +50,7 @@ IF (NOT IOC_NO_DEFAULT_CONFIG)
         SET(WINDOWS_ARCH "x86")
       ENDIF(_carch_x64)
       MESSAGE(STATUS "Building for target ${WINDOWS_ARCH}")
-	  
+
       SET(MSVC_RT_DEBUG_FIX 1)
 
     ELSE(MSVC)
@@ -58,25 +58,27 @@ IF (NOT IOC_NO_DEFAULT_CONFIG)
     ENDIF(MSVC)
 
     IF(DEFINED ENV{IOC_DEP_DIRS})
-	SET(IOC_DEP_DIRS $ENV{IOC_DEP_DIRS})
-	MESSAGE(STATUS "ioc build environment variables found")
-	SET(BOOST_SEARCH_PATH         "${IOC_DEP_DIRS}/boost_1_53_0")
-	SET(Java_JAVA_EXECUTABLE    	"C:\\Program Files\\Java\\jre7\\bin\\java.exe")
-#	SET(ANTLR_JAR_PATH    	"${IOC_DEP_DIRS}/javalib/antlr-3.4-complete.jar")
-	SET(ANTLR_JAR_PATH    	"${IOC_DEP_DIRS}/javalib/antlr-3.2.jar")
+        SET(IOC_DEP_DIRS $ENV{IOC_DEP_DIRS})
+        MESSAGE(STATUS "ioc build environment variables found")
+        SET(BOOST_SEARCH_PATH         "${IOC_DEP_DIRS}/boost_1_53_0")
+        SET(Java_JAVA_EXECUTABLE    	"C:\\Program Files\\Java\\jre7\\bin\\java.exe")
+#	    SET(ANTLR_JAR_PATH    	"${IOC_DEP_DIRS}/javalib/antlr-3.4-complete.jar")
+        SET(ANTLR_JAR_PATH    	"${IOC_DEP_DIRS}/javalib/antlr-3.2.jar")
+        SET(LLVM_LIT_DIR    	"${IOC_DEP_DIRS}\\llvm-3.2.src\\utils\\lit")
     ENDIF(DEFINED ENV{IOC_DEP_DIRS})
 
   ELSE(WIN32)
     IF(DEFINED ENV{IOC_DEP_DIRS})
-	SET(IOC_DEP_DIRS $ENV{IOC_DEP_DIRS})
-	MESSAGE(STATUS "ioc build environment variables found")
-	SET(Java_JAVA_EXECUTABLE    	"/usr/bin/java")
-	SET(ANTLR_JAR_PATH    	"${IOC_DEP_DIRS}/javalib/antlr-3.2.jar")
+        SET(IOC_DEP_DIRS $ENV{IOC_DEP_DIRS})
+        MESSAGE(STATUS "ioc build environment variables found")
+        SET(Java_JAVA_EXECUTABLE    	"/usr/bin/java")
+        SET(ANTLR_JAR_PATH    	"${IOC_DEP_DIRS}/javalib/antlr-3.2.jar")
+        SET(LLVM_LIT_DIR    	"${IOC_DEP_DIRS}/llvm-3.2.src/utils/lit")
     ENDIF(DEFINED ENV{IOC_DEP_DIRS})
   ENDIF(WIN32)
 
 ELSE(NOT IOC_NO_DEFAULT_CONFIG)
-	
+
   MESSAGE(STATUS "IOC_NO_DEFAULT_CONFIG defined - not using default configuration values.")
 
 ENDIF(NOT IOC_NO_DEFAULT_CONFIG)

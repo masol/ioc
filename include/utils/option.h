@@ -220,17 +220,11 @@ namespace ioc { namespace utils
          **/
         bool is_existed(const std::string & path)
         {
-            try{
 #ifndef IOC_NOTHREAD_SAFE
-                boost::shared_lock<boost::shared_mutex> ls(m_mutex);
+            boost::shared_lock<boost::shared_mutex> ls(m_mutex);
 #endif
-                m_ptree.get<boost::any>(path);
-                return true;
-            }catch(const boost::property_tree::ptree_bad_path & e)
-            {
-				(void)e;
-                return false;
-            }
+			boost::optional<boost::any> value = m_ptree.get_optional<boost::any>(path);
+			return value.is_initialized();
             /**其他异常往上抛 */
         }
 

@@ -37,6 +37,7 @@ namespace ioc
 	{
 	public:
 		static	AstNode*	createAstNode(IOCASTTYPES type);
+		static	AstNode*	createAstNode(const char* name);
 	};
 }
 

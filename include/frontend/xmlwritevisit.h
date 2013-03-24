@@ -54,6 +54,8 @@ public:
     }
     //@todo encoding process.
     bool   WriteTo(AstNode *proot,const std::string &f);
+
+    static  AstNode*  ReadFrom(const std::string &fname);
 };
 
 } //end namespace ioc.

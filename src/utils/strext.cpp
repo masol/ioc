@@ -17,43 +17,45 @@
 //  IOC website: http://www.masols.com                                    //
 ////////////////////////////////////////////////////////////////////////////
 
+
 #include "config.h"
-#include "frontend/astfactory.h"
+#include "utils/strext.h"
+#include <sstream>
 
-namespace ioc
+
+namespace ioc{ namespace strext{
+
+
+std::string  encodeForXML(const char* s)
 {
-	AstNode*	AstFactory::createAstNode(IOCASTTYPES type)
-	{
-		AstNode* ret = NULL;
-		
-#define CREATE_TYPE_INSTANCE(type) \
-	case IocAst_k##type:	\
-		ret = new type();	\
-		break;
-		
-		switch(type){
-			AST_NODE_LIST(CREATE_TYPE_INSTANCE)
-		//prevent compiler error.
-		default:
-			break;
-		}
-#undef CREATE_TYPE_INSTANCE
-		return ret;
-	}
+    if(!s)
+        return "";
+	std::ostringstream sRet;
+    while(*s)
+    {
+         switch( *s )
+         {
+             case '&': sRet << "&amp;"; break;
+             case '<': sRet << "&lt;"; break;
+             case '>': sRet << "&gt;"; break;
+             case '"': sRet << "&quot;"; break;
+             case '\'': sRet << "&apos;"; break;
 
-	AstNode*	AstFactory::createAstNode(const char* name)
-	{
-		AstNode* ret = NULL;
-#define CREATE_NAME_INSTANCE(type) \
-	else if(strcmp(name,#type) == 0){	\
-		ret = new type();	\
-	}
-		if(!name){
-		}
-		AST_NODE_LIST(CREATE_NAME_INSTANCE)
-#undef	CREATE_NAME_INSTANCE
+             default:
+              if ( *s<32 || *s>127 )
+              {
+                   sRet << "&#" << (unsigned int)*s << ";";
+              }
+              else
+              {
+                   sRet << *s;
+              }
+         }
+         s++;
+    }
+    return sRet.str();
+}
 
-		return ret;
-	}
 
+}
 }

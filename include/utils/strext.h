@@ -17,43 +17,16 @@
 //  IOC website: http://www.masols.com                                    //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "config.h"
-#include "frontend/astfactory.h"
+#ifndef IOC_UTILS_STREXT_H
+#define IOC_UTILS_STREXT_H
 
-namespace ioc
-{
-	AstNode*	AstFactory::createAstNode(IOCASTTYPES type)
-	{
-		AstNode* ret = NULL;
-		
-#define CREATE_TYPE_INSTANCE(type) \
-	case IocAst_k##type:	\
-		ret = new type();	\
-		break;
-		
-		switch(type){
-			AST_NODE_LIST(CREATE_TYPE_INSTANCE)
-		//prevent compiler error.
-		default:
-			break;
-		}
-#undef CREATE_TYPE_INSTANCE
-		return ret;
-	}
+#include <string>
 
-	AstNode*	AstFactory::createAstNode(const char* name)
-	{
-		AstNode* ret = NULL;
-#define CREATE_NAME_INSTANCE(type) \
-	else if(strcmp(name,#type) == 0){	\
-		ret = new type();	\
-	}
-		if(!name){
-		}
-		AST_NODE_LIST(CREATE_NAME_INSTANCE)
-#undef	CREATE_NAME_INSTANCE
+namespace ioc { namespace strext{
 
-		return ret;
-	}
+    extern std::string  encodeForXML(const char*);
 
-}
+} //end namespace strext
+} //end namespace ioc
+
+#endif //IOC_UTILS_STREXT_H

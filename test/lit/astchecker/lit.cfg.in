@@ -1,0 +1,45 @@
+# -*- Python -*-
+
+import os
+import platform
+
+# Configuration file for the 'lit' test runner.
+
+# name: The name of this test suite.
+config.name = 'IOC'
+
+# Tweak PATH for Win32
+if platform.system() == 'Windows':
+    # Seek sane tools in directories and set to $PATH.
+    path = getattr(config, 'lit_tools_dir', None)
+    path = lit.getToolsPath(path,
+                            config.environment['PATH'],
+                            ['cmp.exe', 'grep.exe', 'sed.exe'])
+    if path is not None:
+        path = os.path.pathsep.join((path,
+                                     config.environment['PATH']))
+        config.environment['PATH'] = path
+
+execute_external = False;
+config.test_format = lit.formats.ShTest(execute_external)
+
+# suffixes: A list of file extensions to treat as test files.
+config.suffixes = ['.c', '.cpp', '.js', '.jss', '.cu', '.ll', '.cl', '.java']
+
+# test_source_root: The root path where tests are located.
+config.test_source_root = os.path.dirname(__file__)
+
+# When running under valgrind, we mangle '-vg' onto the end of the triple so we
+# can check it with XFAIL and XTARGET.
+if lit.useValgrind:
+    config.target_triple += '-vg'
+
+config.astchecker = "@IOC_AST_CHECKER_PATH@"
+lit.note('using astchecker: %r' % config.astchecker)
+config.substitutions.append( ('%astchecker', ' ' + config.astchecker + ' ') ) 
+
+# Set available features we allow tests to conditionalize on.
+if platform.system() != 'Windows':
+    config.available_features.add('crash-recovery')
+
+#config.available_features.add('shell')

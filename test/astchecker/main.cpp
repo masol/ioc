@@ -28,93 +28,69 @@
 
 #include "utils/modulepath.h"
 
-class visitorAAA : public ioc::AstVisitor{
-		int indent;
-	public:
-		visitorAAA(){
-			indent = 0;
-		}
-		virtual void beginTraversal(ioc::AstNode * node) {
-			for(int i = 0 ; i < indent * 4; i++)
-			{
-				std::cout << ' ';
-			}
-			std::cout << node->printable_type_name() << ":";
-			std::cout << node->childrenCount() << std::endl;
-			//ioc::Assignment *pAssignNode = node->AsAssignment();
-			//if(pAssignNode)
-			//{
-			//	ioc::AstNode* pLeft = pAssignNode->left();
-			//	ioc::AstNode* pRight = pAssignNode->right();
-			//}
-			indent++;
-		}
-		virtual void endTraversal(ioc::AstNode * node) {	indent--;}
-	};
-
+const int	CHECK_SUC = 0;
+const int	CHECK_FAIL = 1;
 
 int main(int argc,const char * argv[])
 {
 	//initionlize config.
 	if(!ioc::utils::Option::instance().initFromArgs(argc,argv))
-		return 0;
+	{
+		std::cout << CHECK_FAIL;
+		return CHECK_FAIL;
+	}
 
 	std::string source("system.source");
 	if(ioc::utils::Option::instance().is_existed(source))
 	{
 		std::vector<std::string> srcset = ioc::utils::Option::instance().get<std::vector<std::string> >(source);
 		std::vector<std::string>::iterator it = srcset.begin();
+		bool checkFailed = false;
 		while(it != srcset.end())
 		{
-			std::cout << "Compiling " << *it << std::endl;
-
 			boost::shared_ptr<ioc::frontend::Parser> pParser;
 			pParser.reset(new ioc::frontend::Parser());
 			if(pParser->parser(*it))
 			{
-                if(ioc::utils::Option::instance().is_existed("system.genxml"))
-				{
-					std::string	key("system.output");
-					boost::filesystem::path	result;
-					if(ioc::utils::Option::instance().is_existed(key))
-					{//system.output is exist.use it.
-						boost::filesystem::path	p(ioc::utils::Option::instance().get<std::string>(key));
-						if(p.is_absolute())
-						{
-							result = p;
-						}else{
-							result = ioc::utils::ModulePath::instance().initPath();
-							result /= p;
-						}
-					}else{//use current input file.
-						boost::filesystem::path	p(*it);
-						if(p.is_absolute())
-						{
-							result = p;
-						}else{
-							result = ioc::utils::ModulePath::instance().initPath();
-							result /= p;
-						}
-						result.replace_extension("xml");
-
-					}
-					ioc::XmlWriteVisit  visit;
-					visit.WriteTo(pParser->getRootAst(),result.generic_string());
-					ioc::AstNode* pNode = visit.ReadFrom(result.generic_string());
-					if(pNode)
+				std::string	key("system.output");
+				boost::filesystem::path	result;
+				if(ioc::utils::Option::instance().is_existed(key))
+				{//system.output is exist.use it.
+					boost::filesystem::path	p(ioc::utils::Option::instance().get<std::string>(key));
+					if(p.is_absolute())
 					{
-						bool bEqual = pNode->logicEqual(pParser->getRootAst());
-						visit.WriteTo(pParser->getRootAst(),result.generic_string() + "2");
+						result = p;
+					}else{
+						result = ioc::utils::ModulePath::instance().initPath();
+						result /= p;
 					}
+				}else{//use current input file.
+					boost::filesystem::path	p(*it);
+					if(p.is_absolute())
+					{
+						result = p;
+					}else{
+						result = ioc::utils::ModulePath::instance().initPath();
+						result /= p;
+					}
+					result.replace_extension("xml");
 				}
-				visitorAAA	v;
-				v.apply(pParser->getRootAst());
+				ioc::AstNode* pNode = ioc::XmlWriteVisit::ReadFrom(result.generic_string());
+				if(!pNode || !pNode->logicEqual(pParser->getRootAst()) )
+				{
+					checkFailed = true;
+					break;
+				}
 			}
-
 			it++;
 		}
+		
+		if(!checkFailed)
+		{
+			std::cout << CHECK_SUC;
+			return CHECK_SUC;
+		}
 	}
-	IOC_LOG_SEV(_ERROR) << "THIS IS A TEST";
-	printf("hello,finish");
-	return 0;
+	std::cout << CHECK_FAIL;
+	return CHECK_FAIL;
 }
