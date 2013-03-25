@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SourceElements>
+    <VariableDeclarationList pos='0'>
+        <VariableProxy pos='0' declare='true' identify='i'>
+        </VariableProxy>
+        <VariableProxy pos='1' declare='true' identify='j'>
+        </VariableProxy>
+        <VariableProxy pos='2' declare='true' identify='k'>
+        </VariableProxy>
+    </VariableDeclarationList>
+    <ForStatement pos='1'>
+        <Assignment pos='0' operator='='>
+            <VariableProxy pos='0' declare='false' identify='t'>
+            </VariableProxy>
+            <NumberLiteral pos='1' literal='0'>
+            </NumberLiteral>
+        </Assignment>
+        <CompareOperation pos='1' operator='&lt;'>
+            <VariableProxy pos='0' declare='false' identify='t'>
+            </VariableProxy>
+            <VariableProxy pos='1' declare='false' identify='j'>
+            </VariableProxy>
+        </CompareOperation>
+        <UnaryOperation pos='2' operator='++' isfront='false'>
+            <VariableProxy pos='0' declare='false' identify='t'>
+            </VariableProxy>
+        </UnaryOperation>
+        <SourceElements pos='3'>
+            <UnaryOperation pos='0' operator='++' isfront='true'>
+                <VariableProxy pos='0' declare='false' identify='k'>
+                </VariableProxy>
+            </UnaryOperation>
+        </SourceElements>
+    </ForStatement>
+</SourceElements>
+

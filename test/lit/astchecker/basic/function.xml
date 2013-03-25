@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SourceElements>
+    <Call pos='0' name='print'>
+        <Arguments pos='1'>
+            <VariableProxy pos='0' declare='false' identify='b'>
+            </VariableProxy>
+        </Arguments>
+    </Call>
+</SourceElements>
+

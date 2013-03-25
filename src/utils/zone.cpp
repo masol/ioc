@@ -216,7 +216,6 @@ static	void	freeStorageObject(ZoneStorage* object)
 	}
 	ZoneStorage&
 	ZoneStorage::getStorage(void) {
-		static	ZoneStorage*									lv_Storage;
 		boost::thread_specific_ptr<ZoneStorage>& tls = get_lv_tlsStorage();
 		if(!tls.get())
 			tls.reset(new ZoneStorage());

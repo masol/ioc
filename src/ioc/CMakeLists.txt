@@ -83,11 +83,11 @@ set(IOC_SRCS
 add_executable(ioc ${IOC_SRCS})
 
 IF (WIN32)
-TARGET_LINK_LIBRARIES(ioc utils frontend ${ANTLR_LIBRARIES})
+TARGET_LINK_LIBRARIES(ioc frontend utils ${ANTLR_LIBRARIES})
 ELSE(WIN32)
 TARGET_LINK_LIBRARIES(ioc
-  utils
   frontend
+  utils
   ${ANTLR_LIBRARIES} 
   ${Boost_LIBRARIES}
 )

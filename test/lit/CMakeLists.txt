@@ -19,28 +19,41 @@
 
 #############################################################################
 #
-# CppUnit Test binary
+# lit test suit directory.
 #
 #############################################################################
 
-set(TEST_BASE_SRCS
-	main.cpp
-	JUnitXmlOutputter.cpp
-	JUnitTestResultCollector.cpp
-	)
-	
-set(TEST_CASE_SRCS
-	utils/zone_test.cpp
-	utils/option_test.cpp
-	utils/log_test.cpp
-	)
+IF(NOT LLVM_LIT_DIR)
+    MESSAGE(FATAL_ERROR "--> Could not locate required LLVM lit Path - Please check ${LLVM_LIT_DIR}")
+ELSE()
+    file(COPY "${IOC_SOURCE_DIR}/test/lit/astchecker" DESTINATION "${IOC_BUILD_DIR}/test/lit")
+    # Configure a header file to pass some of the CMake settings
+    # to the source code
 
+    set(LLVM_LIT_PATH "${LLVM_LIT_DIR}/lit.py")
+    set(IOC_ASTCHECKER_TEST_PATH "${IOC_BUILD_DIR}/test/lit/astchecker")
+IF (WIN32)
+    set(IOC_AST_CHECKER_PATH "${IOC_BUILD_DIR}/bin/Debug/astchecker.exe")
+    configure_file(
+      "${IOC_SOURCE_DIR}/test/lit/test.bat.in"
+      "${IOC_BUILD_DIR}/test/lit/test.bat"
+      )
+ELSE()
+    set(IOC_AST_CHECKER_PATH "${IOC_BUILD_DIR}/bin/astchecker")
+    configure_file(
+      "${IOC_SOURCE_DIR}/test/lit/test.sh.in"
+      "${IOC_BUILD_DIR}/test/lit/tmp/test.sh"
+      )
+    message(STATUS "chmod +x ${IOC_BUILD_DIR}/test/lit/test.sh")
+    file(COPY ${IOC_BUILD_DIR}/test/lit/tmp/test.sh
+      DESTINATION ${IOC_BUILD_DIR}/test/lit
+      FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+    file(REMOVE_RECURSE "${IOC_BUILD_DIR}/test/lit/tmp")
+ENDIF()
+    configure_file(
+      "${IOC_SOURCE_DIR}/test/lit/lit.cfg.in"
+      "${IOC_BUILD_DIR}/test/lit/lit.cfg"
+      )
+ENDIF()
 
-include_directories(${CPPUNIT_INCLUDE_DIR})
-add_executable(ioc_test ${TEST_BASE_SRCS} ${TEST_CASE_SRCS})
-
-if(WIN32)
-TARGET_LINK_LIBRARIES(ioc_test utils ${CPPUNIT_LIBRARIES})
-else(WIN32)
-TARGET_LINK_LIBRARIES(ioc_test utils ${CPPUNIT_LIBRARIES} ${Boost_LIBRARIES})
-endif(WIN32)
+add_subdirectory(tools/astchecker)

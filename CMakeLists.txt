@@ -119,7 +119,7 @@ if (NOT PYTHONINTERP_FOUND)
 	MESSAGE(STATUS "Python not found, ignore python based test.")
 else()
 	MESSAGE(STATUS "Python found,building python based test.")
-	add_subdirectory(test/astchecker)
+	add_subdirectory(test/lit)
 endif()
 
 ###########################################################################
