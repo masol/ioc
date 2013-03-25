@@ -33,6 +33,11 @@ typedef	void*	AST_NODE_HANDLE;
 extern "C" {
 #endif
 
+/// @brief set error state.so we can set the detailed error information.
+#define	SET_USER_ERROR_STATE(state_value)		\
+		{RECOGNIZER->state->user1 = (ANTLR3_UINT32)(state_value);}
+
+
 /// @brief Convert pANTLR3_STRING to char*
 #define STR_COVERTER(antlr_string) (char*)antlr_string->chars
 

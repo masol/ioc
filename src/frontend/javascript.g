@@ -111,6 +111,9 @@ sourceElements returns [AST_NODE_HANDLE ret]
 		// Allow empty file.
 	)
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kSourceElements)
+	}
 	
 sourceElement returns [AST_NODE_HANDLE ret]
 @init {
@@ -136,7 +139,6 @@ sourceElement returns [AST_NODE_HANDLE ret]
 	)
 	;
 
-
 // functions
 functionDeclaration returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -155,6 +157,9 @@ IOC_INIT_SRC_INFO(ioc_srcinfo);
 		$ret = IOC_CreateFunctionDeclaration(&ioc_srcinfo, name, ioc_pl.ret, ioc_fb.ret);
 	}
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kFunctionDeclaration)
+	}
 	
 functionExpression returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -173,7 +178,10 @@ IOC_INIT_SRC_INFO(ioc_srcinfo);
 		$ret = IOC_CreateFunctionExpression(&ioc_srcinfo, nameToken, ioc_pl.ret, ioc_fb.ret);
 	}
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kFunctionExpression)
+	}
+
 formalParameterList returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -203,6 +211,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 	)?
 	LineSeparator!* ')'
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kFormalParameterList)
+	}
 
 functionBody returns [AST_NODE_HANDLE ret]
 @init {
@@ -295,6 +306,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	}
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kSourceElements)
+	}
 
 statementList returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -320,6 +334,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		})
 	)*
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kSourceElements)
+	}
 	
 variableStatement returns [AST_NODE_HANDLE ret]
 @init {
@@ -331,6 +348,9 @@ ioc_vdl.ret = NULL;
 		$ret = ioc_vdl.ret;
 	}) (LineSeparator | ';')!
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kVariableDeclarationList)
+	}
 	
 variableDeclarationList returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -355,6 +375,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		})
 	)*
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kVariableDeclarationList)
+	}
 	
 variableDeclarationListNoIn returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -379,6 +402,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		})
 	)*
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kVariableDeclarationList)
+	}
 	
 variableDeclaration returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -399,7 +425,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	})
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kVariableDeclarationList)
+	}
+
 variableDeclarationNoIn returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -419,6 +448,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	})
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kVariableDeclarationList)
+	}
 	
 initialiser returns [AST_NODE_HANDLE ret]
 	:
@@ -443,7 +475,7 @@ initialiserNoIn returns [AST_NODE_HANDLE ret]
 		$ret = ioc_ae.ret;
 	}
 	;
-	
+		
 emptyStatement returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -458,7 +490,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreateEmptyStatement(&iocSrcinfo, token);
 	}
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kEmptyStatement)
+	}
+			
 expressionStatement returns [AST_NODE_HANDLE ret]
 @init
 {
@@ -474,7 +509,7 @@ ioc_e.ret = NULL;
 	)
 	(LineSeparator | ';')!
 	;
-	
+		
 ifStatement returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -492,7 +527,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreateIfStatement(&iocSrcinfo, ifToken, ioc_e.ret, ioc_s1.ret, ioc_s2.ret);
 	}
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kIfStatement)
+	}
+			
 iterationStatement returns [AST_NODE_HANDLE ret]
 	:
 	{
@@ -518,7 +556,7 @@ iterationStatement returns [AST_NODE_HANDLE ret]
 		$ret = r4.ret;
 	}
 	;
-	
+
 doWhileStatement returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -535,6 +573,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreateDoWhileStatement(&iocSrcinfo, doToken, ioc_s.ret, whileToken, ioc_e.ret);
 	}
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kDoWhileStatement)
+	}
 	
 whileStatement returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -553,6 +594,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreateWhileStatement(&iocSrcinfo, whileToken, ioc_e.ret, ioc_s.ret);
 	}
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kWhileStatement)
+	}
 	
 forStatement returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -576,7 +620,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreateForStatement(&iocSrcinfo, forToken, ioc_fsip.ret, ioc_e1.ret, ioc_e2.ret, ioc_s.ret);
 	}
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kForStatement)
+	}
+
 forStatementInitialiserPart returns [AST_NODE_HANDLE ret]
 	:
 	{
@@ -611,6 +658,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreateForInStatement(&iocSrcinfo, forToken, i.ret, inToken, e.ret, s.ret);
 	}
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kForInStatement)
+	}
 	
 forInStatementInitialiserPart returns [AST_NODE_HANDLE ret]
 	:
@@ -643,6 +693,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreateContinueStatement(&iocSrcinfo, token, i);
 	}
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kContinueStatement)
+	}
 
 breakStatement returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -663,6 +716,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	}
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kBreakStatement)
+	}
 
 returnStatement returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -680,7 +736,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreateReturnStatement(&iocSrcinfo, token, e.ret);
 	}
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kReturnStatement)
+	}
+
 withStatement returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -698,6 +757,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreateWithStatement(&iocSrcinfo, token, e.ret, s.ret);
 	}
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kWithStatement)
+	}
 
 labelledStatement returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -715,7 +777,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreateLabelledStatement(&iocSrcinfo, i, s.ret);
 	}
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kLabelledStatement)
+	}
+
 switchStatement returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -733,7 +798,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreateSwitchStatement(&iocSrcinfo, token, e.ret, b.ret);
 	}
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kSwitchStatement)
+	}
+
 caseBlock returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -757,6 +825,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_AppendCaseBlock($ret, c.ret);
 	}))*)? LineSeparator!* '}'
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kCaseBlock)
+	}
 
 caseClause returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -775,7 +846,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreateCaseClause(&iocSrcinfo, token, ioc_e.ret, ioc_sl.ret);
 	}
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kCaseClause)
+	}
+
 defaultClause returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -792,7 +866,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreateDefaultClause(&iocSrcinfo, token, s.ret);
 	}
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kDefaultClause)
+	}
+
 throwStatement returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -809,6 +886,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreateThrow(&iocSrcinfo, token, e.ret);
 	}
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kThrow)
+	}
 
 tryStatement returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -827,7 +907,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreateTryStatement(&iocSrcinfo, token, s.ret, c.ret, f.ret);
 	}))?)
 	;
-       
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kTryStatement)
+	}
+
 catchClause returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -844,7 +927,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreateTryCatchStatement(&iocSrcinfo, token, i, s.ret);
 	}
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kTryCatchStatement)
+	}
+
 finallyClause returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -861,6 +947,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreateTryFinallyStatement(&iocSrcinfo, token, s.ret);
 	}
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kTryFinallyStatement)
+	}
 
 // expressions
 expression returns [AST_NODE_HANDLE ret]
@@ -890,7 +979,7 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		})
 	)*
 	;
-	
+
 expressionNoIn returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -914,7 +1003,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		})
 	)*
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kBinaryOperation)
+	}
+
 assignmentExpression returns [AST_NODE_HANDLE ret]
 @declarations
 {
@@ -949,7 +1041,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kAssignment)
+	}
+
 assignmentExpressionNoIn returns [AST_NODE_HANDLE ret]
 @declarations
 {
@@ -978,7 +1073,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	}
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kAssignment)
+	}
+
 leftHandSideExpression returns [AST_NODE_HANDLE ret]
 @init
 {
@@ -1024,7 +1122,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kNewExpression)
+	}
+
 memberExpression returns [AST_NODE_HANDLE ret]
 @declarations
 {
@@ -1083,7 +1184,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		)
 	)*
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kMultiPropertyAccessor)
+	}
+
 memberExpressionSuffix returns [AST_NODE_HANDLE ret]
 @init
 {
@@ -1154,7 +1258,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 	(
 	)
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kCall)
+	}
+
 callExpressionSuffix returns [AST_NODE_HANDLE ret]
 @init
 {
@@ -1209,7 +1316,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 	LineSeparator!*
 	')'
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kArguments)
+	}
+
 indexSuffix returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -1226,7 +1336,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreateIndexSuffix(&iocSrcinfo, e.ret);
 	}
 	;	
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kIndexSuffix)
+	}
+
 propertyReferenceSuffix returns [AST_NODE_HANDLE ret]
 @declarations
 {
@@ -1247,7 +1360,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kPropertyReferenceSuffix)
+	}
+
 assignmentOperator returns [pANTLR3_COMMON_TOKEN ret]
 	:
 	{
@@ -1286,6 +1402,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	}
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kConditional)
+	}
 
 conditionalExpressionNoIn returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -1311,6 +1430,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	}
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kConditional)
+	}
 
 logicalORExpression  returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -1335,7 +1457,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)*
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kBinaryOperation)
+	}
+
 logicalORExpressionNoIn returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -1359,7 +1484,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)*
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kBinaryOperation)
+	}
+
 logicalANDExpression  returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -1383,7 +1511,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)*
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kBinaryOperation)
+	}
+
 logicalANDExpressionNoIn returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -1407,7 +1538,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)*
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kBinaryOperation)
+	}
+
 bitwiseORExpression returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -1431,7 +1565,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)*
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kBinaryOperation)
+	}
+
 bitwiseORExpressionNoIn returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -1455,7 +1592,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)*
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kBinaryOperation)
+	}
+
 bitwiseXORExpression returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -1479,7 +1619,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)*
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kBinaryOperation)
+	}
+
 bitwiseXORExpressionNoIn returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -1503,7 +1646,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)*
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kBinaryOperation)
+	}
+
 bitwiseANDExpression returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -1527,7 +1673,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)*
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kBinaryOperation)
+	}
+
 bitwiseANDExpressionNoIn returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -1551,7 +1700,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)*
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kBinaryOperation)
+	}
+
 equalityExpression returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -1575,6 +1727,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)*
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kCompareOperation)
+	}
 
 equalityExpressionNoIn returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -1599,7 +1754,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)*
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kCompareOperation)
+	}
+
 relationalExpression   returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -1623,6 +1781,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)*
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kCompareOperation)
+	}
 
 relationalExpressionNoIn returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -1647,6 +1808,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)*
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kCompareOperation)
+	}
 
 shiftExpression returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -1671,6 +1835,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)*
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kBinaryOperation)
+	}
 
 additiveExpression returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -1695,6 +1862,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)*
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kBinaryOperation)
+	}
 
 multiplicativeExpression returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -1719,6 +1889,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	)*
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kBinaryOperation)
+	}
 
 unaryExpression returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -1745,6 +1918,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	})
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kUnaryOperation)
+	}
 
 postfixExpression returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -1767,6 +1943,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		}
 	}
 	;
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kUnaryOperation)
+	}
 
 primaryExpression returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -1803,7 +1982,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 	|
 	'(' LineSeparator!* (e=expression{ $ret = e.ret; }) LineSeparator!* ')'
 	;
-	
+	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kVariableProxy)
+	}
+
 // arrayLiteral definition.
 arrayLiteral returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -1825,7 +2007,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_AppendArrayLiteral($ret, e.ret);
 	}))?)* LineSeparator!* ']'
 	;
-       
+ 	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kArrayLiteral)
+	}
+
 // objectLiteral definition.
 objectLiteral returns [AST_NODE_HANDLE ret]
 @declarations {
@@ -1847,7 +2032,10 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_AppendObjectLiteral($ret, p.ret);
 	}))?)* LineSeparator!* '}'
 	;
-	
+ 	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kObjectLiteral)
+	}
+
 propertyNameAndValue returns [AST_NODE_HANDLE ret]
 @declarations {
 ioc_src_info	iocSrcinfo;
@@ -1865,6 +2053,9 @@ IOC_INIT_SRC_INFO(iocSrcinfo);
 		$ret = IOC_CreatePropertyNameAndValue(&iocSrcinfo, p.ret, e.ret);
 	}
 	;
+ 	catch[Exception e]{
+		SET_USER_ERROR_STATE(IocAst_kPropertyNameAndValue)
+	}
 
 propertyName returns [AST_NODE_HANDLE ret]
 @declarations {

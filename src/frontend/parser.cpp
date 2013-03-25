@@ -22,6 +22,22 @@
 #include "frontend/antlrhelper.h"
 #include "parserhelper.h"
 
+typedef void	(*TYPE_displayRecognitionError)  (struct ANTLR3_BASE_RECOGNIZER_struct * recognizer, pANTLR3_UINT8 * tokenNames);
+static TYPE_displayRecognitionError	sv_olddisplayRecognitionError = NULL;
+
+
+//@TODO : more detailed error output.
+static
+void displayRecognitionError(struct ANTLR3_BASE_RECOGNIZER_struct *recognizer, pANTLR3_UINT8 *tokenNames)
+{
+	if(sv_olddisplayRecognitionError)
+	{
+		///recognizer->state->user1 save the rule identify when an error occurs.
+		///we can use this to customize error output information.
+		sv_olddisplayRecognitionError(recognizer,tokenNames);
+	}
+}
+
 
 namespace ioc{
 namespace frontend{
@@ -62,6 +78,8 @@ static	ioc::AstNode* ParserStream(pANTLR3_INPUT_STREAM i_input)
 
 		javascriptParser_program_return	    i_langAST;
 
+		sv_olddisplayRecognitionError = i_psr->pParser->rec->displayRecognitionError;
+		i_psr->pParser->rec->displayRecognitionError = displayRecognitionError;
 		i_langAST = i_psr->program(i_psr);
 
 		if (i_psr->pParser->rec->state->errorCount > 0)
