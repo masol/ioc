@@ -16,65 +16,34 @@
 //                                                                        //
 //  IOC website: http://www.masols.com                                    //
 ////////////////////////////////////////////////////////////////////////////
- 
-#ifndef  IOC_FRONTEND_ASTVISITOR_H
-#define  IOC_FRONTEND_ASTVISITOR_H
+
+#ifndef  IOC_FRONTEND_SRTVISIT_H
+#define  IOC_FRONTEND_SRTVISIT_H
 
 /**
- * @file     astvisitor.h
+ * @file     srtvisit.h
+ * @brief    遍历ast并执行srt（Semantic Resolution Tree）变换。用于产生全局的变量表，块表以及线程表。
+ * @details  变换成功之后，SRTVisit维护了面向变量使用的语义树(semantic resolution tree)。通过遍历对应的语法树产生语义树，我们的分析都是针对语义树展开的。
+ *   SRTVisit并不处理基于变量依赖关系的代码分析与重构，这个特性留待以后实现。这允许我们发现适合并行的代码块，并产生适应特定并行框架的代码(例如opencl或者openmp).
+ *   变量依赖关系分析需要重构AST结构，生成以操作为中心的AST子树集合（集合之间也有依赖关系)。所有子节点的变量依赖于父节点。通过寻找AST图中控制点的读写特性来判定是否可以转为MapReduce模式。
  **/
- 
- #include "utils/zone.h"
- #include "frontend/astpath.h"
+
+#include "frontend/astvisitor.h"
 
 namespace ioc{
-	
-	class AstNode;
-	
-	class AstVisitor : ZoneObject
-	{
-	protected:
-		AstPath		m_currentPath;
 
-		//we can not instantiation AstVisitor.
-		AstVisitor(void){}
-	private:
-		///@brief Returns true instructed to continue to traverse.
-		inline	bool	internalBeginTraversal(AstNode * node){
-			m_currentPath.append(node);
-			return this->beginTraversal(node);
-		}
-		///@brief Returns true instructed to continue to traverse.
-		inline	bool	internalEndTraversal(AstNode * node){
-			bool bRet = this->endTraversal(node);
-			m_currentPath.pop();
-			return bRet;
-		}
-	protected:
-		friend class AstNode;
-		/// @brief 派生类应该派生下面两个方法以实现具体的遍历行为。
-		virtual bool beginTraversal(AstNode * node) {return true;} 
-		virtual bool endTraversal(AstNode * node) {return true;}
-	public:
-		~AstVisitor(void){}
-		
-		AstPath&	getCurrentPath(){
-			return m_currentPath;
-		}
-		
-		virtual void apply(AstNode *root);
-		virtual void apply(AstPath &path){
-			AstPath::iterator beginit = path.begin();
-			AstPath::iterator endit = path.end();
-			while(beginit != endit){
-				if(!internalBeginTraversal(*beginit) || !internalEndTraversal(*beginit))
-					break;
-				beginit++;
-			}
-		}
-	};
-	
+class SRTVisit : public AstVisitor
+{
+private:
+public:
+    SRTVisit()
+    {
+    }
+    ~SRTVisit()
+    {
+    }
+};
+
 } //end namespace ioc.
 
-#endif //IOC_FRONTEND_ASTVISITOR_H
- 
+#endif	//IOC_FRONTEND_ASTWRITEVISIT_H

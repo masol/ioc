@@ -52,7 +52,8 @@ const char* UnaryOperation::sv_isfront_name = "isfront";
 
 void AstNode::Traversal(AstVisitor* v)
 {
-    v->internalBeginTraversal(this);
+    if(!v->internalBeginTraversal(this))
+		return;
     size_t childCount = this->childrenCount();
     for(size_t i = 0; i <childCount; i++) {
         AstNode* pNode = this->getChildren(i);
@@ -60,7 +61,8 @@ void AstNode::Traversal(AstVisitor* v)
             pNode->Traversal(v);
         }
     }
-    v->internalEndTraversal(this);
+    if(!v->internalEndTraversal(this))
+		return;
 }
 
 void Assignment::opName(const std::string &name)

@@ -34,7 +34,7 @@ static const char* sv_pos_prop_name = "pos";
 
 
 // if ofile not initionlizer, exception throwed.
-void
+bool
 XmlWriteVisit::beginTraversal(AstNode * node)
 {
     OutIndent();
@@ -69,14 +69,16 @@ XmlWriteVisit::beginTraversal(AstNode * node)
     }
     m_ofstream  << '>' << std::endl;
     m_indent++;
+	return true;
 }
 
-void
+bool
 XmlWriteVisit::endTraversal(AstNode * node)
 {
     m_indent--;
     OutIndent();
     m_ofstream << "</" << node->printable_type_name() << '>' << std::endl;
+	return true;
 }
 
 bool

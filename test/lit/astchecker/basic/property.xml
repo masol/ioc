@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SourceElements>
+    <MultiPropertyAccessor pos='0'>
+        <Call pos='0' name=''>
+            <MultiPropertyAccessor pos='0'>
+                <VariableProxy pos='0' declare='false' identify='a'>
+                </VariableProxy>
+                <PropertyReferenceSuffix pos='1' name='b'>
+                </PropertyReferenceSuffix>
+                <PropertyReferenceSuffix pos='2' name='c'>
+                </PropertyReferenceSuffix>
+                <PropertyReferenceSuffix pos='3' name='d'>
+                </PropertyReferenceSuffix>
+            </MultiPropertyAccessor>
+            <Arguments pos='1'>
+            </Arguments>
+        </Call>
+        <PropertyReferenceSuffix pos='1' name='e'>
+        </PropertyReferenceSuffix>
+        <PropertyReferenceSuffix pos='2' name='f'>
+        </PropertyReferenceSuffix>
+    </MultiPropertyAccessor>
+</SourceElements>

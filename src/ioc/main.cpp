@@ -34,7 +34,7 @@ class visitorAAA : public ioc::AstVisitor{
 		visitorAAA(){
 			indent = 0;
 		}
-		virtual void beginTraversal(ioc::AstNode * node) {
+		virtual bool beginTraversal(ioc::AstNode * node) {
 			for(int i = 0 ; i < indent * 4; i++)
 			{
 				std::cout << ' ';
@@ -48,8 +48,9 @@ class visitorAAA : public ioc::AstVisitor{
 			//	ioc::AstNode* pRight = pAssignNode->right();
 			//}
 			indent++;
+			return true;
 		}
-		virtual void endTraversal(ioc::AstNode * node) {	indent--;}
+		virtual bool endTraversal(ioc::AstNode * node) {	indent--; return true;}
 	};
 
 
