@@ -29,12 +29,21 @@
  **/
 
 #include "frontend/astvisitor.h"
+#include "utils/zone.h"
 
 namespace ioc{
+
+class Callback;
+class NameSapce;
 
 class SRTVisit : public AstVisitor
 {
 private:
+	///@brief 名称空间栈，遍历AST时利用这个栈来确定变量可见区域，进而确定变量的链接。
+	ZoneVector<NameSapce*>	m_nsStack;
+	///@brief 保存了本段代码全部的回调函数。
+	///@details 回调函数表会在以后两个环节发生作用，一是接下来的函数重组，组织为函数指针方式。二是线程分析，每个回调函数都是潜在的线程入口点。
+	ZoneVector<Callback*>	m_callbackTable;
 public:
     SRTVisit()
     {
@@ -42,6 +51,9 @@ public:
     ~SRTVisit()
     {
     }
+protected:
+	virtual bool beginTraversal(AstNode * node);
+	virtual bool endTraversal(AstNode * node);
 };
 
 } //end namespace ioc.

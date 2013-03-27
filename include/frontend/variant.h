@@ -17,30 +17,33 @@
 //  IOC website: http://www.masols.com                                    //
 ////////////////////////////////////////////////////////////////////////////
 
+#ifndef  IOC_FRONTEND_VARIANT_H
+#define  IOC_FRONTEND_VARIANT_H
 
-#include "config.h"
-#include "frontend/ast.h"
-#include "frontend/srtvisit.h"
-#include "frontend/astfactory.h"
-#include "frontend/namespace.h"
-#include "frontend/callback.h"
-#include "frontend/variant.h"
+#include "utils/zone.h"
+#include<boost/unordered_map.hpp>
 
 namespace ioc{
 
+class NameSapce;
 
-
-// if ofile not initionlizer, exception throwed.
-bool
-SRTVisit::beginTraversal(AstNode * node)
+class Variant : public ioc::ZoneObject
 {
-	return true;
+private:
+	std::string		name;
+	int				m_type;
+	ZoneVector<NameSapce*>	m_readBlocks;
+	ZoneVector<NameSapce*>	m_writeBlocks;
+	typedef	boost::unordered_map<std::string,Variant>		type_variant_child_map;
+	type_variant_child_map		m_children;
+public:
+	/// @brief if true,this is a stack variant.
+	bool	isUsedInSameThread();
+};
+
+
 }
 
-bool
-SRTVisit::endTraversal(AstNode * node)
-{
-	return true;
-}
 
-} //end namespace ioc.
+
+#endif //IOC_FRONTEND_VARIANT_H
