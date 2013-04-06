@@ -35,6 +35,7 @@ namespace ioc{
 
 class Callback;
 class NameSapce;
+class Variant;
 
 class SRTVisit : public AstVisitor
 {
@@ -44,6 +45,15 @@ private:
 	///@brief 保存了本段代码全部的回调函数。
 	///@details 回调函数表会在以后两个环节发生作用，一是接下来的函数重组，组织为函数指针方式。二是线程分析，每个回调函数都是潜在的线程入口点。
 	ZoneVector<Callback*>	m_callbackTable;
+	void	namespaceBegin(AstNode * node);
+	void	namespaceEnd(void);
+	void	processVariant(VariableProxy* pVarAst);
+	inline NameSapce*  currentNamespace(void)
+	{
+	    return m_nsStack.size() ? m_nsStack.front() : NULL;
+
+	}
+	Variant*    findVariant(const std::string& name);
 public:
     SRTVisit()
     {

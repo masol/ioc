@@ -45,44 +45,6 @@
 
 namespace ioc{
 
-/// @brief Data type used in SAST.
-typedef enum {
-    T_INVALID,
-    T_VARIANT,
-    T_VOID,
-    T_BOOLEAN,        // bool
-    T_I2,
-    T_I4,
-    T_UCHAR,
-    T_CHAR,            // char
-    T_USHORT,
-    T_SHORT,        // short
-    T_UINT,
-    T_INT,            // int
-    T_ULONG,
-    T_LONG,            // long
-    T_ULONGLONG,
-    T_LONGLONG,        // long long
-    T_FLOAT,        // float
-    T_DOUBLE,        // double
-    T_LONG_DOUBLE,
-    T_STRING,
-    T_STRUCT,
-    T_ARRAY,
-    T_POINTER,
-    T_ARGLIST,
-    T_FUNCTION,
-    T_EXTERNAL,
-    T_I_N,
-    T_UI128,
-    T_I128,
-    T_ENUM,
-    T_UNION,
-    T_VECTOR,
-    T_OPAQUE
-} VariableType;
-
-std::string getTystringByIntTy(int Ty);
 #define DEF_FORWARD_DECLARATION(type) class type;
     AST_NODE_LIST(DEF_FORWARD_DECLARATION)
 #undef DEF_FORWARD_DECLARATION

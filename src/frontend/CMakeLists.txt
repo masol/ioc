@@ -62,6 +62,7 @@ set(FRONTEND_SRCS
 	astvisitor.cpp
 	xmlwritevisit.cpp
 	srtvisit.cpp
+	namespace.cpp
 	${IOC_ANTLR_OUTPUT_DIR}/javascriptParser.c
 	${IOC_ANTLR_OUTPUT_DIR}/javascriptLexer.c
 	)

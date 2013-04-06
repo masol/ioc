@@ -29,16 +29,56 @@ class NameSapce;
 
 class Variant : public ioc::ZoneObject
 {
+public:
+    /// @brief Data type used in AST.
+    typedef enum {
+        T_INVALID,
+        T_VARIANT,
+        T_VOID,
+        T_BOOLEAN,        // bool
+        T_I2,
+        T_I4,
+        T_UCHAR,
+        T_CHAR,            // char
+        T_USHORT,
+        T_SHORT,        // short
+        T_UINT,
+        T_INT,            // int
+        T_ULONG,
+        T_LONG,            // long
+        T_ULONGLONG,
+        T_LONGLONG,        // long long
+        T_FLOAT,        // float
+        T_DOUBLE,        // double
+        T_LONG_DOUBLE,
+        T_STRING,
+        T_STRUCT,
+        T_ARRAY,
+        T_POINTER,
+        T_ARGLIST,
+        T_FUNCTION,
+        T_EXTERNAL,
+        T_I_N,
+        T_UI128,
+        T_I128,
+        T_ENUM,
+        T_UNION,
+        T_VECTOR,
+        T_OPAQUE
+    } VariableType;
 private:
-	std::string		name;
-	int				m_type;
+	std::string		    m_name;
+	int				        m_type;
 	ZoneVector<NameSapce*>	m_readBlocks;
 	ZoneVector<NameSapce*>	m_writeBlocks;
 	typedef	boost::unordered_map<std::string,Variant>		type_variant_child_map;
 	type_variant_child_map		m_children;
 public:
+    Variant(const std::string& name) : m_name(name), m_type(T_INVALID)
+    {}
 	/// @brief if true,this is a stack variant.
 	bool	isUsedInSameThread();
+	inline const std::string& name(){return m_name;}
 };
 
 

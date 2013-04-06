@@ -28,3 +28,7 @@ cppunit:
 
 llvm(ioc use llvm library and llvm lit test suite)
 1. download llvm from llvm.org
+
+
+boehm gc library:
+1. download from(http://www.hpl.hp.com/personal/Hans_Boehm/gc/)
