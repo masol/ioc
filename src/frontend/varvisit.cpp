@@ -20,7 +20,7 @@
 
 #include "config.h"
 #include "frontend/ast.h"
-#include "frontend/srtvisit.h"
+#include "frontend/varvisit.h"
 #include "frontend/astfactory.h"
 #include "frontend/namespace.h"
 #include "frontend/callback.h"
@@ -30,7 +30,7 @@ namespace ioc{
 
 
 void
-SRTVisit::namespaceBegin(AstNode * node)
+VarVisit::namespaceBegin(AstNode * node)
 {
     NameSapce*  cur = this->currentNamespace();
 
@@ -44,7 +44,7 @@ SRTVisit::namespaceBegin(AstNode * node)
 }
 
 void
-SRTVisit::namespaceEnd()
+VarVisit::namespaceEnd()
 {
     if(m_nsStack.size())
     {
@@ -53,14 +53,19 @@ SRTVisit::namespaceEnd()
 }
 
 Variant*
-SRTVisit::findVariant(const std::string& name)
+VarVisit::findVariant(const std::string& name)
 {
     return NULL;
 }
 
 
 void
-SRTVisit::processVariant(VariableProxy* pVarAst)
+VarVisit::typeDeduce(VariableProxy* pVarAst,AstNode* pNode)
+{
+}
+
+void
+VarVisit::processVariant(VariableProxy* pVarAst)
 {
     NameSapce*  cur = this->currentNamespace();
     Variant *pVar;
@@ -80,26 +85,28 @@ SRTVisit::processVariant(VariableProxy* pVarAst)
 
     //backtrace to find variant context.
     AstPath& path = this->getCurrentPath();
-    size_t depth = path.size();
-    bool bBreak = false;
-    for(size_t i = 0; i < depth ; i++)
+    AstNode* pNode = path.getNodeFromTail(0);
+
+    switch(pNode->node_type())
     {
-        AstNode* pNode = path.getNodeFromTail(i);
-        switch(pNode->node_type())
+    case IocAst_kFormalParameterList:
+        break;
+    case IocAst_kArguments: //传递给函数调用。标示本变量为外部引用变量。
+    case IocAst_kReturnStatement: //返回变量。标示本变量为外部引用变量。
+        pVar->markExternal();
+        break;
+    case IocAst_kBinaryOperation:
+        //出现在操作中。执行类型推演。
         {
-        case IocAst_kArguments:
-            //传递给函数调用。标示本变量为外部变量。
-            bBreak = true;
-            break;
-        case IocAst_kAssignment:
-            //出现在赋值语句中。
-            bBreak = true;
-            break;
-        case IocAst_kMultiPropertyAccessor:
-            break;
+            BinaryOperation* pBinary = pNode->AsBinaryOperation();
+            typeDeduce(pVarAst,(pBinary->left() == pVarAst) ? pBinary->right() : pBinary->left() );
         }
-        if(bBreak)
-            break;
+        break;
+    case IocAst_kAssignment:
+        //出现在赋值语句中。类型推演。
+        break;
+    case IocAst_kMultiPropertyAccessor:
+        break;
     }
 
 
@@ -110,9 +117,8 @@ SRTVisit::processVariant(VariableProxy* pVarAst)
 
 
 
-// if ofile not initionlizer, exception throwed.
 bool
-SRTVisit::beginTraversal(AstNode * node)
+VarVisit::beginTraversal(AstNode * node)
 {
 	switch(node->node_type())
 	{
@@ -133,7 +139,7 @@ SRTVisit::beginTraversal(AstNode * node)
 }
 
 bool
-SRTVisit::endTraversal(AstNode * node)
+VarVisit::endTraversal(AstNode * node)
 {
 	switch(node->node_type())
 	{

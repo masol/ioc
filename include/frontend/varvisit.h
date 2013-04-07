@@ -17,14 +17,14 @@
 //  IOC website: http://www.masols.com                                    //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef  IOC_FRONTEND_SRTVISIT_H
-#define  IOC_FRONTEND_SRTVISIT_H
+#ifndef  IOC_FRONTEND_VARVISIT_H
+#define  IOC_FRONTEND_VARVISIT_H
 
 /**
- * @file     srtvisit.h
+ * @file     varvisit.h
  * @brief    遍历ast并执行srt（Semantic Resolution Tree）变换。用于产生全局的变量表，块表以及线程表。
- * @details  变换成功之后，SRTVisit维护了面向变量使用的语义树(semantic resolution tree)。通过遍历对应的语法树产生语义树，我们的分析都是针对语义树展开的。
- *   SRTVisit并不处理基于变量依赖关系的代码分析与重构，这个特性留待以后实现。这允许我们发现适合并行的代码块，并产生适应特定并行框架的代码(例如opencl或者openmp).
+ * @details  变换成功之后，VarVisit维护了面向变量使用的语义树(semantic resolution tree)。通过遍历对应的语法树产生语义树，我们的分析都是针对语义树展开的。
+ *   VarVisit并不处理基于变量依赖关系的代码分析与重构，这个特性留待以后实现。这允许我们发现适合并行的代码块，并产生适应特定并行框架的代码(例如opencl或者openmp).
  *   变量依赖关系分析需要重构AST结构，生成以操作为中心的AST子树集合（集合之间也有依赖关系)。所有子节点的变量依赖于父节点。通过寻找AST图中控制点的读写特性来判定是否可以转为MapReduce模式。
  **/
 
@@ -37,7 +37,7 @@ class Callback;
 class NameSapce;
 class Variant;
 
-class SRTVisit : public AstVisitor
+class VarVisit : public AstVisitor
 {
 private:
 	///@brief 名称空间栈，遍历AST时利用这个栈来确定变量可见区域，进而确定变量的链接。
@@ -48,6 +48,7 @@ private:
 	void	namespaceBegin(AstNode * node);
 	void	namespaceEnd(void);
 	void	processVariant(VariableProxy* pVarAst);
+	void	typeDeduce(VariableProxy* pVarAst,AstNode* pNode);
 	inline NameSapce*  currentNamespace(void)
 	{
 	    return m_nsStack.size() ? m_nsStack.front() : NULL;
@@ -55,10 +56,10 @@ private:
 	}
 	Variant*    findVariant(const std::string& name);
 public:
-    SRTVisit()
+    VarVisit()
     {
     }
-    ~SRTVisit()
+    ~VarVisit()
     {
     }
 protected:
@@ -68,4 +69,4 @@ protected:
 
 } //end namespace ioc.
 
-#endif	//IOC_FRONTEND_ASTWRITEVISIT_H
+#endif	//IOC_FRONTEND_VARVISIT_H

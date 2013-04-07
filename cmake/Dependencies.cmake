@@ -65,6 +65,8 @@ find_package(CppUnit)
 
 find_package(PythonInterp)
 
+find_package(LLVM)
+
 #set(WITH_V8                  "${V8_SEARCH_PATH}")
 #find_package(V8)
 #if (V8_FOUND)

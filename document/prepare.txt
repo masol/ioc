@@ -28,6 +28,7 @@ cppunit:
 
 llvm(ioc use llvm library and llvm lit test suite)
 1. download llvm from llvm.org
+2. (windows only): modify tools/CMakeLists.txt,search llvm-config,build it. add sed.exe to path.
 
 
 boehm gc library:

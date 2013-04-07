@@ -69,13 +69,16 @@ public:
 private:
 	std::string		    m_name;
 	int				        m_type;
+	bool                    m_bExteranl;
 	ZoneVector<NameSapce*>	m_readBlocks;
 	ZoneVector<NameSapce*>	m_writeBlocks;
 	typedef	boost::unordered_map<std::string,Variant>		type_variant_child_map;
 	type_variant_child_map		m_children;
 public:
-    Variant(const std::string& name) : m_name(name), m_type(T_INVALID)
+    Variant(const std::string& name) : m_name(name), m_type(T_INVALID), m_bExteranl(false)
     {}
+    inline bool  isExternal()const {return m_bExteranl;}
+    inline void  markExternal(){m_bExteranl = true;}
 	/// @brief if true,this is a stack variant.
 	bool	isUsedInSameThread();
 	inline const std::string& name(){return m_name;}

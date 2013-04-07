@@ -26,7 +26,7 @@
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
 	message(STATUS "Found Doxygen and generating ioc documentation")
-	
+
 	# Generate doxygen.template
 	set(DOXYGEN_IOC_TEMPLATE ${IOC_BUILD_DIR}/doxygen/ioc.template)
 	configure_file(
@@ -46,12 +46,12 @@ if(DOXYGEN_FOUND)
 			message(STATUS "Found dot")
 			set(DOXYGEN_DOT_CONF "HAVE_DOT = YES")
 	endif(DOXYGEN_DOT_FOUND)
-	
+
 	IF (WIN32)
 		STRING(REGEX REPLACE "/" "\\\\" DOXYGEN_IOC_OUTPUT_DIR ${DOXYGEN_IOC_OUTPUT_DIR})
 		STRING(REGEX REPLACE "/" "\\\\" DOXYGEN_IOC_TEMPLATE ${DOXYGEN_IOC_TEMPLATE})
 		STRING(REGEX REPLACE "/" "\\\\" DOXYGEN_IOC_INPUT ${DOXYGEN_IOC_INPUT})
-		
+
 		SET(DOXYGEN_CREATE_OUTPUT_DIR if exist "${DOXYGEN_IOC_OUTPUT_DIR}" echo "dir exist" else mkdir -p "${DOXYGEN_IOC_OUTPUT_DIR}")
 		SET(DOXYGEN_COPY_TEMPLATE copy /Y "${DOXYGEN_IOC_TEMPLATE}" "${DOXYGEN_IOC_INPUT}")
 	ELSE()
@@ -83,12 +83,15 @@ set(IOC_SRCS
 add_executable(ioc ${IOC_SRCS})
 
 IF (WIN32)
-TARGET_LINK_LIBRARIES(ioc frontend utils ${ANTLR_LIBRARIES})
+message(STATUS "${LLVM_LIBS}")
+TARGET_LINK_LIBRARIES(ioc runtime frontend utils ${ANTLR_LIBRARIES} ${LLVM_LIBS})
 ELSE(WIN32)
 TARGET_LINK_LIBRARIES(ioc
+  runtime
   frontend
   utils
-  ${ANTLR_LIBRARIES} 
+  ${ANTLR_LIBRARIES}
+  ${LLVM_LIBS}
   ${Boost_LIBRARIES}
 )
 ENDIF(WIN32)

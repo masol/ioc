@@ -66,6 +66,9 @@ SET(IOC_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 SET(IOC_INCLUDE_DIR "${IOC_SOURCE_DIR}/include")
 include_directories("${IOC_INCLUDE_DIR}")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/include")
+include_directories("${LLVM_INCLUDE_DIR}")
+
+LINK_DIRECTORIES(${LLVM_LIB_DIR})
 
 # When using single configuration generators like make
 # cmake does need to know which of the possible configurations
@@ -88,6 +91,11 @@ if (NOT Java_Runtime_FOUND)
 	MESSAGE(FATAL_ERROR "--> Could not locate required Java Environment - Please check ${Java_JAVA_EXECUTABLE}")
 endif()
 
+if (NOT LLVM_FOUND)
+	MESSAGE(FATAL_ERROR "--> Could not locate required llvm files - Please check ${LLVM_CONFIG_EXECUTABLE}")
+endif()
+
+
 set(IOC_VERSION_MAJOR 0)
 set(IOC_VERSION_MINOR 1)
 
@@ -106,6 +114,7 @@ configure_file(
 
 add_subdirectory(src/utils)
 add_subdirectory(src/frontend)
+add_subdirectory(src/runtime)
 add_subdirectory(src/ioc)
 
 if (NOT CPPUNIT_FOUND)

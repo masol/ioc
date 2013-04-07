@@ -65,6 +65,11 @@ IF (NOT IOC_NO_DEFAULT_CONFIG)
 #	    SET(ANTLR_JAR_PATH    	"${IOC_DEP_DIRS}/javalib/antlr-3.4-complete.jar")
         SET(ANTLR_JAR_PATH    	"${IOC_DEP_DIRS}/javalib/antlr-3.2.jar")
         SET(LLVM_LIT_DIR    	"${IOC_DEP_DIRS}\\llvm-3.2.src\\utils\\lit")
+        SET(LLVM_INCLUDE_DIR   	"${IOC_DEP_DIRS}\\llvm-3.2.src\\include")
+        SET(LLVM_BIN_DIR    	"${IOC_DEP_DIRS}\\llvm-3.2.src\\build\\bin\\Release")
+        SET(LLVM_LIB_DIR    	"${IOC_DEP_DIRS}\\llvm-3.2.src\\build\\lib\\Release")
+        SET(LLVM_LIBS           "LLVMAsmParser.lib;LLVMInstrumentation.lib;LLVMLinker.lib;LLVMArchive.lib;LLVMBitReader.lib;LLVMDebugInfo.lib;LLVMJIT.lib;LLVMipo.lib;LLVMVectorize.lib;LLVMBitWriter.lib;LLVMTableGen.lib;LLVMHexagonCodeGen.lib;LLVMHexagonDesc.lib;LLVMHexagonAsmPrinter.lib;LLVMHexagonInfo.lib;LLVMNVPTXCodeGen.lib;LLVMNVPTXDesc.lib;LLVMNVPTXInfo.lib;LLVMNVPTXAsmPrinter.lib;LLVMMBlazeDisassembler.lib;LLVMMBlazeCodeGen.lib;LLVMMBlazeAsmParser.lib;LLVMMBlazeDesc.lib;LLVMMBlazeInfo.lib;LLVMMBlazeAsmPrinter.lib;LLVMCppBackendCodeGen.lib;LLVMCppBackendInfo.lib;LLVMMSP430CodeGen.lib;LLVMMSP430Desc.lib;LLVMMSP430AsmPrinter.lib;LLVMMSP430Info.lib;LLVMXCoreCodeGen.lib;LLVMXCoreDesc.lib;LLVMXCoreInfo.lib;LLVMCellSPUCodeGen.lib;LLVMCellSPUDesc.lib;LLVMCellSPUInfo.lib;LLVMMipsAsmParser.lib;LLVMMipsCodeGen.lib;LLVMMipsDesc.lib;LLVMMipsAsmPrinter.lib;LLVMMipsDisassembler.lib;LLVMMipsInfo.lib;LLVMARMDisassembler.lib;LLVMARMAsmParser.lib;LLVMARMCodeGen.lib;LLVMARMDesc.lib;LLVMARMInfo.lib;LLVMARMAsmPrinter.lib;LLVMPowerPCCodeGen.lib;LLVMPowerPCDesc.lib;LLVMPowerPCInfo.lib;LLVMPowerPCAsmPrinter.lib;LLVMSparcCodeGen.lib;LLVMSparcDesc.lib;LLVMSparcInfo.lib;LLVMX86AsmParser.lib;LLVMX86Disassembler.lib;LLVMX86CodeGen.lib;LLVMSelectionDAG.lib;LLVMAsmPrinter.lib;LLVMX86Desc.lib;LLVMX86Info.lib;LLVMX86AsmPrinter.lib;LLVMX86Utils.lib;LLVMMCDisassembler.lib;LLVMMCParser.lib;LLVMInterpreter.lib;LLVMCodeGen.lib;LLVMScalarOpts.lib;LLVMInstCombine.lib;LLVMTransformUtils.lib;LLVMipa.lib;LLVMAnalysis.lib;LLVMMCJIT.lib;LLVMRuntimeDyld.lib;LLVMExecutionEngine.lib;LLVMTarget.lib;LLVMMC.lib;LLVMObject.lib;LLVMCore.lib;LLVMSupport.lib")
+#       manual set LLVM_LDFLAGS LLVM_COMPILE_FLAGS
     ENDIF(DEFINED ENV{IOC_DEP_DIRS})
 
   ELSE(WIN32)

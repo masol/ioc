@@ -28,6 +28,10 @@
 
 #include "utils/modulepath.h"
 
+#include "runtime/app.h"
+#include "llvm/Support/Signals.h"
+#include "llvm/Support/PrettyStackTrace.h"
+
 class visitorAAA : public ioc::AstVisitor{
 		int indent;
 	public:
@@ -56,6 +60,10 @@ class visitorAAA : public ioc::AstVisitor{
 
 int main(int argc,const char * argv[])
 {
+	llvm::sys::PrintStackTraceOnErrorSignal();
+	llvm::PrettyStackTraceProgram X(argc, argv);
+
+	ioc::App::instance();
 	//initionlize config.
 	if(!ioc::utils::Option::instance().initFromArgs(argc,argv))
 		return 0;
