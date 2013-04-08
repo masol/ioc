@@ -17,8 +17,8 @@
 //  IOC website: http://www.masols.com                                    //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef  IOC_RUNTIME_APP_H
-#define  IOC_RUNTIME_APP_H
+#ifndef  IOC_RUNTIME_RUNTIME_H
+#define  IOC_RUNTIME_RUNTIME_H
 
 /**
  * @file     app.h
@@ -35,12 +35,12 @@ namespace llvm{
 
 namespace ioc{
 
-class App : public Singleton<App>
+class Runtime : public Singleton<Runtime>
 {
 private:
-    friend class Singleton<App>;
-    typedef Singleton<App>   inherited;
-    App();
+    friend class Singleton<Runtime>;
+    typedef Singleton<Runtime>   inherited;
+    Runtime();
     llvm::Module*    m_appModule;
     std::string     m_pathName;
 public:
@@ -48,7 +48,7 @@ public:
     inline const std::string& pathName()const{
         return m_pathName;
     }
-    ~App();
+    ~Runtime();
     llvm::Module*   getModule();
 };
 

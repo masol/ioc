@@ -83,7 +83,6 @@ set(IOC_SRCS
 add_executable(ioc ${IOC_SRCS})
 
 IF (WIN32)
-message(STATUS "${LLVM_LIBS}")
 TARGET_LINK_LIBRARIES(ioc runtime frontend utils ${ANTLR_LIBRARIES} ${LLVM_LIBS})
 ELSE(WIN32)
 TARGET_LINK_LIBRARIES(ioc

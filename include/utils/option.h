@@ -82,6 +82,7 @@ namespace ioc { namespace utils
 #endif //IOC_NOTHREAD_SAFE
 
         Option(void){}
+
     public:
 		/**
 		 * @brief 从命令行以及配置文件初始化option对象。本方法一并初始化了module路径信息.
@@ -159,6 +160,13 @@ namespace ioc { namespace utils
             m_slots.put(path, s);
             return old;
         }
+
+
+        /**
+         * @brief  获取输出文件名。如果未指定输出文件，使用给出的文件名，并替换为ext后缀。
+         * @param  result : 保存了最后的路径。
+        **/
+        void     getOutputFile(std::string &result,const std::string &input,const std::string& extension);
 
 
 

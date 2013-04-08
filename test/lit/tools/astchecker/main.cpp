@@ -20,6 +20,7 @@
 #include "config.h"
 #include "utils/option.h"
 #include "utils/log.h"
+#include "utils/pathext.h"
 #include "frontend/parser.h"
 #include "frontend/astvisitor.h"
 #include "frontend/xmlwritevisit.h"

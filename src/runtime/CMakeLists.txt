@@ -24,7 +24,7 @@
 #############################################################################
 
 set(RUNTIME_SRCS
-	app.cpp
+	runtime.cpp
 	)
 
 add_library(runtime STATIC ${RUNTIME_SRCS})

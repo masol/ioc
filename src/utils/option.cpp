@@ -258,5 +258,35 @@ Option::initFromArgs(int argc,const char* argv[])
 	return !bNeedQuit;
 }
 
+void
+Option::getOutputFile(std::string &result_string,const std::string &input_path,const std::string& extension)
+{
+    std::string	key("system.output");
+    boost::filesystem::path	result;
+    if(this->is_existed(key))
+    {//system.output is exist.use it.
+        boost::filesystem::path	p(this->get<std::string>(key));
+        if(p.is_absolute())
+        {
+            result = p;
+        }else{
+            result = ioc::utils::ModulePath::instance().initPath();
+            result /= p;
+        }
+    }else{//use current input file.
+        boost::filesystem::path	p(input_path);
+        if(p.is_absolute())
+        {
+            result = p;
+        }else{
+            result = ioc::utils::ModulePath::instance().initPath();
+            result /= p;
+        }
+        result.replace_extension(extension);
+    }
+	result_string = result.generic_string();
+}
+
+
 }//utils
 }//ioc

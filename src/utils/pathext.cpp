@@ -22,14 +22,14 @@
 
 #if (BOOST_FILESYSTEM_VERSION != 3)
 #ifndef WIN32
-#include <unistd.h> 
+#include <unistd.h>
 #endif //WIN32
 #endif //(BOOST_FILESYSTEM_VERSION != 3)
 
 namespace boost{
 namespace filesystem{
 namespace ioc_ext{
-	
+
 	bool read_symlink(boost::filesystem::path &result)
 	{
 #if (BOOST_FILESYSTEM_VERSION == 3)
@@ -45,7 +45,7 @@ namespace ioc_ext{
 		return false;
 #else
 		return false;
-#endif //WIN32		
+#endif //WIN32
 	}
 
 	boost::filesystem::path canonicalize(const boost::filesystem::path& p)
@@ -80,8 +80,8 @@ namespace ioc_ext{
 		}
 		return result;
 	}
-	
-	
+
+
 	boost::filesystem::path resolve_sym(const boost::filesystem::path& p)
 	{
 		boost::filesystem::path result;
@@ -121,10 +121,16 @@ namespace ioc_ext{
 		}
 		return result;
 	}
-	
-	
+
+    std::string   get_extension(const std::string &path)
+    {
+        boost::filesystem::path tmp(path);
+        return tmp.extension().generic_string();
+    }
+
+
+
 }//ioc_ext
 }//boost
 }//filesystem
 
-	

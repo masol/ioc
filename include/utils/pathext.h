@@ -34,7 +34,7 @@ namespace ioc_ext{
 	/** @brief 对p执行canonicalize操作，不同于boost::path中的方法，本方法正确处理了符号链接。
 	 */
 	boost::filesystem::path canonicalize(const boost::filesystem::path& p);
-	
+
 	/** @brief 解析路径p，并将其中含有符号链接的部分替换为实际路径。同时对结果执行canonicalize操作。
 	 */
 	boost::filesystem::path resolve_sym(const boost::filesystem::path& p);
@@ -43,6 +43,10 @@ namespace ioc_ext{
 	 *   @param result result保存了请求转化的符号链接，必须其是一个符号链接。
 	 */
 	bool read_symlink(boost::filesystem::path &result);
+
+	/** @brief 获取指定路径的后缀。
+	**/
+	std::string   get_extension(const std::string &path);
 
 }//ioc_ext
 }//boost

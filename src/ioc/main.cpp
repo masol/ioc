@@ -20,42 +20,46 @@
 #include "config.h"
 #include "utils/option.h"
 #include "utils/log.h"
+#include "utils/pathext.h"
 #include "frontend/parser.h"
 #include "frontend/astvisitor.h"
 #include "frontend/xmlwritevisit.h"
+#include "frontend/xmlparser.h"
 #include <boost/shared_ptr.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include <stdio.h>
 
 #include "utils/modulepath.h"
 
-#include "runtime/app.h"
+#include "runtime/runtime.h"
 #include "llvm/Support/Signals.h"
 #include "llvm/Support/PrettyStackTrace.h"
 
-class visitorAAA : public ioc::AstVisitor{
-		int indent;
-	public:
-		visitorAAA(){
-			indent = 0;
+class visitorAAA : public ioc::AstVisitor
+{
+	int indent;
+public:
+	visitorAAA(){
+		indent = 0;
+	}
+	virtual bool beginTraversal(ioc::AstNode * node) {
+		for(int i = 0 ; i < indent * 4; i++)
+		{
+			std::cout << ' ';
 		}
-		virtual bool beginTraversal(ioc::AstNode * node) {
-			for(int i = 0 ; i < indent * 4; i++)
-			{
-				std::cout << ' ';
-			}
-			std::cout << node->printable_type_name() << ":";
-			std::cout << node->childrenCount() << std::endl;
-			//ioc::Assignment *pAssignNode = node->AsAssignment();
-			//if(pAssignNode)
-			//{
-			//	ioc::AstNode* pLeft = pAssignNode->left();
-			//	ioc::AstNode* pRight = pAssignNode->right();
-			//}
-			indent++;
-			return true;
-		}
-		virtual bool endTraversal(ioc::AstNode * node) {	indent--; return true;}
-	};
+		std::cout << node->printable_type_name() << ":";
+		std::cout << node->childrenCount() << std::endl;
+		//ioc::Assignment *pAssignNode = node->AsAssignment();
+		//if(pAssignNode)
+		//{
+		//	ioc::AstNode* pLeft = pAssignNode->left();
+		//	ioc::AstNode* pRight = pAssignNode->right();
+		//}
+		indent++;
+		return true;
+	}
+	virtual bool endTraversal(ioc::AstNode * node) {	indent--; return true;}
+};
 
 
 int main(int argc,const char * argv[])
@@ -63,7 +67,7 @@ int main(int argc,const char * argv[])
 	llvm::sys::PrintStackTraceOnErrorSignal();
 	llvm::PrettyStackTraceProgram X(argc, argv);
 
-	ioc::App::instance();
+	ioc::Runtime::instance();
 	//initionlize config.
 	if(!ioc::utils::Option::instance().initFromArgs(argc,argv))
 		return 0;
@@ -77,49 +81,34 @@ int main(int argc,const char * argv[])
 		{
 			std::cout << "Compiling " << *it << std::endl;
 
-			boost::shared_ptr<ioc::frontend::Parser> pParser;
-			pParser.reset(new ioc::frontend::Parser());
-			if(pParser->parser(*it))
+			std::string ext = boost::filesystem::ioc_ext::get_extension(*it);
+			if(boost::iequals(ext,".xml"))
 			{
-                if(ioc::utils::Option::instance().is_existed("system.genxml"))
+			    boost::shared_ptr<ioc::frontend::XMLParser> pParser;
+				pParser.reset(new ioc::frontend::XMLParser());
+				if(pParser->parser(*it))
 				{
-					std::string	key("system.output");
-					boost::filesystem::path	result;
-					if(ioc::utils::Option::instance().is_existed(key))
-					{//system.output is exist.use it.
-						boost::filesystem::path	p(ioc::utils::Option::instance().get<std::string>(key));
-						if(p.is_absolute())
-						{
-							result = p;
-						}else{
-							result = ioc::utils::ModulePath::instance().initPath();
-							result /= p;
-						}
-					}else{//use current input file.
-						boost::filesystem::path	p(*it);
-						if(p.is_absolute())
-						{
-							result = p;
-						}else{
-							result = ioc::utils::ModulePath::instance().initPath();
-							result /= p;
-						}
-						result.replace_extension("xml");
-
-					}
-					ioc::XmlWriteVisit  visit;
-					visit.WriteTo(pParser->getRootAst(),result.generic_string());
-					ioc::AstNode* pNode = visit.ReadFrom(result.generic_string());
-					if(pNode)
-					{
-						bool bEqual = pNode->logicEqual(pParser->getRootAst());
-						visit.WriteTo(pParser->getRootAst(),result.generic_string() + "2");
-					}
 				}
-				visitorAAA	v;
-				v.apply(pParser->getRootAst());
-			}
+			}else if(boost::iequals(ext,".js")){
+				boost::shared_ptr<ioc::frontend::Parser> pParser;
+				pParser.reset(new ioc::frontend::Parser());
+				if(pParser->parser(*it))
+				{
+					if(ioc::utils::Option::instance().is_existed("system.genxml"))
+					{
+						std::string     result;
+						ioc::utils::Option::instance().getOutputFile(result,*it,"xml");
 
+						ioc::XmlWriteVisit  visit;
+						visit.WriteTo(pParser->getRootAst(),result);
+					}
+					visitorAAA	v;
+					v.apply(pParser->getRootAst());
+				}
+			}else{
+				std::cout << "invalid suffix '" << ext << "',";
+			}
+			std::cout << "done" << std::endl;
 			it++;
 		}
 	}

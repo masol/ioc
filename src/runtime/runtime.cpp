@@ -19,7 +19,7 @@
 
 
 #include "config.h"
-#include "runtime/app.h"
+#include "runtime/runtime.h"
 #include "llvm/Support/Atomic.h"
 #include "llvm/Support/Threading.h"
 #include "llvm/Support/ManagedStatic.h"
@@ -33,7 +33,7 @@
 namespace ioc
 {
 
-App::App() : m_appModule(NULL)
+Runtime::Runtime() : m_appModule(NULL)
 {
 	llvm::llvm_start_multithreaded();
 
@@ -53,7 +53,7 @@ App::App() : m_appModule(NULL)
 }
 
 void
-App::pathName(const std::string &n)
+Runtime::pathName(const std::string &n)
 {
     m_pathName = n;
     if(m_appModule)
@@ -63,7 +63,7 @@ App::pathName(const std::string &n)
 }
 
 llvm::Module*
-App::getModule()
+Runtime::getModule()
 {
     if(!m_appModule)
     {
@@ -76,7 +76,7 @@ App::getModule()
     return m_appModule;
 }
 
-App::~App()
+Runtime::~Runtime()
 {
 	if(m_appModule)
     {
