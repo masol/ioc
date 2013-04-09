@@ -19,9 +19,10 @@
 
 #include "config.h"
 #include "frontend/xmlparser.h"
-#include <boost/property_tree/detail/rapidxml.hpp>
 #include <boost/scope_exit.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include <fstream>
+#include <iostream>
 
 namespace ioc{
 namespace frontend{
@@ -58,20 +59,75 @@ XMLParser::parser(const std::string& fname)
   return false;
 }
 
-
-typedef	boost::property_tree::detail::rapidxml::xml_node<char>	node_type;
-static	void processNode(node_type *pNode,XMLParser *pParser)
+bool
+XMLParser::processDeclaration(rapidxml_node_type *pNode)
 {
+    IOC_ASSERT(pNode->type() == boost::property_tree::detail::rapidxml::node_declaration);
+    bool    bok = true;
+	rapidxml_attr_iterator it = rapidxml_attr_iterator::begin(pNode);
+    while(it != rapidxml_attr_iterator::end())
+    {
+        if(boost::iequals(it->name(),"encoding"))
+        {
+            if(!boost::iequals(it->value(),"utf-8"))
+            {//@FIXME:encoding support.
+                std::cerr << "Warning: encoding '" << it->value() << "' not supported." << std::endl;
+                bok = false;
+            }
+            m_encoding = it->value();
+        }
+   		it++;
+    }
+    return bok;
+}
+
+bool
+XMLParser::processPI(rapidxml_node_type *pNode)
+{
+	bool	bOK = false;
+    IOC_ASSERT(pNode->type() == boost::property_tree::detail::rapidxml::node_pi);
+    if(boost::iequals(pNode->name(),"include"))
+    {
+		rapidxml_attr_iterator it = ioc::rapidxml::find_attr(pNode,"src");
+		while(it != rapidxml_attr_iterator::end())
+        {
+   			bOK = true;
+            std::cout << "include src '" <<it->value() << "'" << std::endl;
+            it = ioc::rapidxml::find_attr(++it,"src");
+        }
+    }else if(boost::iequals(pNode->name(),"namespace"))
+    {
+		rapidxml_attr_iterator it = ioc::rapidxml::find_attr_startwith(pNode,"xmlns:");
+		while(it != rapidxml_attr_iterator::end())
+        {
+   			bOK = true;
+            std::cout << "include namespace '" <<it->name() << "'=" << it->value() << std::endl;
+            it = ioc::rapidxml::find_attr_startwith(++it,"xmlns:");
+        }
+    }
+    return bOK;
+}
+
+
+bool
+XMLParser::processNode(rapidxml_node_type *pNode)
+{
+    bool    bOK = false;
     switch(pNode->type())
     {
     case boost::property_tree::detail::rapidxml::node_declaration:
-		//if(pParser->
+        bOK = processDeclaration(pNode);
         break;
     case boost::property_tree::detail::rapidxml::node_doctype:
+        //ignore DOCTYPE now.
+        bOK = true;
         break;
     case boost::property_tree::detail::rapidxml::node_pi:
+        //process Process Instruction.
         break;
     case boost::property_tree::detail::rapidxml::node_comment:
+        //ignore comment now.
+        bOK = true;
         break;
     case boost::property_tree::detail::rapidxml::node_cdata:
         break;
@@ -80,24 +136,30 @@ static	void processNode(node_type *pNode,XMLParser *pParser)
     case boost::property_tree::detail::rapidxml::node_element:
         break;
     default:
+        bOK = false;
         IOC_ASSERT(false && "invalid node type.");
+        break;
     }
+    return bOK;
 }
 
 
 bool
 XMLParser::parser(const char* buffer,int size,const char* name)
 {
+    bool    bOK = false;
     boost::property_tree::detail::rapidxml::xml_document<char>    doc;
     const int flag = boost::property_tree::detail::rapidxml::parse_declaration_node | boost::property_tree::detail::rapidxml::parse_doctype_node | boost::property_tree::detail::rapidxml::parse_pi_nodes;
     try{
 		///@FIXME: first get encoding info.
 		///then convert to utf-8.
         doc.parse<flag>(const_cast<char*>(buffer));
-		node_type *child = doc.first_node();
+		rapidxml_node_type *child = doc.first_node();
 		while(child)
         {
-            processNode(child,this);
+            bOK = processNode(child);
+            if(!bOK)
+                break;
             child = child->next_sibling();
         }
         //pRet = readFromNode(doc.first_node(),index_dummy);
@@ -105,8 +167,7 @@ XMLParser::parser(const char* buffer,int size,const char* name)
     {
         (void)e;
     }
-
-    return false;
+    return bOK;
 }
 
 

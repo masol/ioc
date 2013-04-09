@@ -29,6 +29,7 @@ set(UTILS_SRCS
 	option.cpp
 	log.cpp
 	strext.cpp
+	rapidxml_utils.cpp
 	)
 
 

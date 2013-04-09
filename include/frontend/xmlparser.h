@@ -27,7 +27,7 @@
  **/
 
 #include	"utils/zone.h"
-#include 	"frontend/ast.h"
+#include    "utils/rapidxml_utils.h"
 
 namespace ioc{
 namespace frontend{
@@ -40,8 +40,12 @@ namespace frontend{
 		int				m_errorLineNumber;
 		int				m_errorCharNumber;
 		int				m_errorCode;
+		std::string    m_encoding;
+        bool        processNode(rapidxml_node_type *pNode);
+        bool        processDeclaration(rapidxml_node_type *pNode);
+        bool        processPI(rapidxml_node_type *pNode);
 	public:
-		XMLParser(void) : m_errorLineNumber(-1),m_errorCharNumber(-1),m_errorCode(-1)
+		XMLParser(void) : m_errorLineNumber(-1),m_errorCharNumber(-1),m_errorCode(-1),m_encoding("utf-8")
 		{
 		}
 
